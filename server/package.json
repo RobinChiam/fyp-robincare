@@ -1,0 +1,36 @@
+{
+  "name": "fyp-robincare",
+  "version": "1.0.0",
+  "description": "Final Year Project using MERN Stack",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm test",
+    "start": "nodemon app.js",
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RobinChiam/fyp-robincare.git"
+  },
+  "author": "Robin Chiam Jin Qin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RobinChiam/fyp-robincare/issues"
+  },
+  "homepage": "https://github.com/RobinChiam/fyp-robincare#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.6.3",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.15",
+    "nodemon": "^3.1.6",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0"
+  }
+}

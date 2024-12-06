@@ -1,0 +1,129 @@
+/* General Styles for Form Page */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .form-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  /* Profile Picture Styling */
+  .profile-pic-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-pic-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer; /* Make it look clickable */
+  }
+  
+  .profile-pic-wrapper img {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .overlay-text {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  /* Show overlay on hover */
+  .profile-pic-wrapper:hover .overlay {
+    opacity: 1;
+  }
+  
+  /* Input Fields */
+  input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+  }
+  
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: #3c99dc;
+    background-color: #fff;
+  }
+  
+  /* Labels */
+  label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  /* Button */
+  button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  button:hover {
+    background-color: #218838;
+  }
+  
+  /* Error and Success Message Styling */
+  .error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  

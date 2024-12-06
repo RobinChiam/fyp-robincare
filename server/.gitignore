@@ -1,0 +1,4 @@
+node_modules/
+.env
+public_html/public/uploads/profile-picture/
+public_html/routes/api.js
