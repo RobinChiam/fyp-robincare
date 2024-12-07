@@ -1,5 +1,4 @@
 server/node_modules/
 server/.env
-server/web/public/uploads/profile-picture/
-server/web/routes/api.js
+
 
