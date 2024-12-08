@@ -33,50 +33,32 @@ const loginHandler = async (req, res) => {
 
 
 const registerHandler = async (req, res) => {
-    const { email, password, role, name, phone, icNumber, profilePicture, dob, address, gender, specialization, consultationHours, medicalHistory } = req.body;
-
+    const { email, pin } = req.body;
+  
     try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create the user
-        const newUser = new User({
-            email,
-            password: hashedPassword,
-            role,
-            name,
-            phone,
-            icNumber,
-            profilePicture
-        });
-        const savedUser = await newUser.save();
-
-        // Depending on the role, create a Doctor or Patient entry
-        if (role === 'doctor') {
-            const newDoctor = new Doctor({
-                user: savedUser._id,
-                specialization,
-                consultationHours
-            });
-            await newDoctor.save();
-        } else if (role === 'patient') {
-            const newPatient = new Patient({
-                user: savedUser._id,
-                dob,
-                address,
-                gender,
-                medicalHistory
-            });
-            await newPatient.save();
-        }
-
-        // Respond with success
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+      const verification = await Verification.findOne({ email, pin });
+  
+      if (!verification) {
+        return res.status(400).json({ message: 'Invalid PIN.' });
+      }
+  
+      // Create user in User collection
+      await User.create({
+        icOrPassport: verification.icOrPassport,
+        fullName: verification.fullName,
+        email: verification.email,
+        dob: verification.dob,
+        password: verification.password, // Hash password in production
+      });
+  
+      // Delete verification record
+      await Verification.deleteOne({ email });
+  
+      res.status(200).json({ message: 'Account created successfully!' });
+    } catch (err) {
+      res.status(500).json({ message: 'Verification failed.', error: err.message });
     }
-};
+  };
 
 
 

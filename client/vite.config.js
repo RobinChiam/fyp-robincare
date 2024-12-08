@@ -6,14 +6,17 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // Proxy API requests
-      '/billing': 'http://localhost:5000', // Proxy API requests
-      '/patient': 'http://localhost:5000', // Proxy API requests  
-      '/doctor': 'http://localhost:5000', // Proxy API requests
-      '/admin': 'http://localhost:5000', // Proxy API requests
-      '/medical-records': 'http://localhost:5000', // Proxy API requests
-      '/insurance-claims': 'http://localhost:5000', // Proxy API requests
-      '/auth': 'http://localhost:5000', // Proxy API requests
+      '/api': 'http://localhost:5000',
+      '/billing': 'http://localhost:5000',
+      '/patient': 'http://localhost:5000',
+      '/doctor': 'http://localhost:5000',
+      '/admin': 'http://localhost:5000',
+      '/medical-records': 'http://localhost:5000',
+      '/insurance-claims': 'http://localhost:5000',
+      '/auth': {
+        target:'http://localhost:5000',
+        changeOrigin: true
+      },
     },
   },
 })
