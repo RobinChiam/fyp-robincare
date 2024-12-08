@@ -1,0 +1,259 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: 100vh;
+}
+
+h1 {
+    color: #4CAF50;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Book Appointment Page Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+form input[type="text"],
+form input[type="date"],
+form textarea {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+}
+
+form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+form button:hover {
+    background-color: #45a049;
+}
+
+/* View Appointments Page Styling */
+.appointments-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.appointments-list li {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.appointments-list li:nth-child(odd) {
+    background-color: #f1f1f1;
+}
+
+.appointment-details {
+    flex-grow: 1;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.appointment-actions form {
+    display: inline-block;
+}
+
+.appointment-actions button {
+    padding: 8px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.appointment-actions button.view-more {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.appointment-actions button.cancel {
+    background-color: #f44336;
+    color: white;
+}
+
+.appointment-actions button:hover {
+    opacity: 0.8;
+}
+
+/* No Appointments Message */
+.no-appointments {
+    text-align: center;
+    color: #888;
+    font-size: 18px;
+    margin-top: 30px;
+}
+
+.detail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Container for the appointment details */
+.detail-container {
+    width: 80%;
+    max-width: 800px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Remove space between table cells */
+    margin: 20px 0;
+}
+
+/* Table header (labels) styling */
+th {
+    text-align: left;
+    padding: 10px;
+    background-color: #f4f4f4;
+    font-weight: 600;
+    color: #333;
+    width: 30%;
+}
+
+/* Table data (values) styling */
+td {
+    padding: 10px;
+    background-color: #fff;
+    color: #555;
+}
+
+/* Row separation */
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Status-specific styling */
+td:contains("pending") {
+    color: #f0ad4e; /* Yellow */
+    font-weight: bold;
+}
+
+td:contains("completed") {
+    color: #5cb85c; /* Green */
+    font-weight: bold;
+}
+
+td:contains("cancelled") {
+    color: #d9534f; /* Red */
+    font-weight: bold;
+}
+
+/* Appointment detail labels */
+.detail-container strong {
+    display: inline-block;
+    width: 150px;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Text under labels */
+.detail-container span {
+    font-weight: 400;
+    color: #333;
+}
+
+/* Spacing between items */
+.detail-container div {
+    margin-bottom: 15px;
+}
+
+/* Doctor and status styling */
+.status {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #d9534f; /* Default: red, customize for different statuses */
+}
+
+.status.completed {
+    color: #5cb85c; /* Green for completed */
+}
+
+.status.pending {
+    color: #f0ad4e; /* Yellow for pending */
+}
+
+.status.confirmed {
+    color: #5bc0de; /* Blue for confirmed */
+}
+
+.status.cancelled {
+    color: #d9534f; /* Red for cancelled */
+}
+
+/* Notes section */
+.notes {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-left: 4px solid #007bff;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+
+    .container strong {
+        width: 100px;
+    }
+}
+

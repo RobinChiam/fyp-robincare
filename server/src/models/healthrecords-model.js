@@ -1,3 +1,5 @@
+/* Schema for HealthRecord Data Object */
+
 const mongoose = require('mongoose');
 
 const healthRecordSchema = new mongoose.Schema({

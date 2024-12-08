@@ -1,3 +1,5 @@
+/* Schema for Chat Conversation Data Object */
+
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({

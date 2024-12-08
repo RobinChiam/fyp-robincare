@@ -1,0 +1,167 @@
+/* ===== Header Styles ===== */
+header {
+    background-color: #333;
+    padding: 10px 20px;
+    position: fixed; /* Make the header fixed at the top */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width */
+    background-color: #333; /* Ensure background color */
+    z-index: 1000; /* Make sure it appears above other elements */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add slight shadow for distinction */
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px; /* You can adjust this value as needed */
+    margin: 0 auto;
+  }
+  
+  /* Logo */
+  .logo img {
+    height: 50px;
+  }
+  
+  /* Navigation Menu */
+  .nav-menu {
+    list-style-type: none;
+    display: flex;
+    gap: 20px; /* Space between menu items */
+  }
+  
+  .nav-menu li {
+    position: relative;
+  }
+  
+  .nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    display: inline-block;
+  }
+  
+  .nav-menu a:hover {
+    background-color: #444;
+    border-radius: 5px;
+  }
+  
+  /* Dropdown for Appointments */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%; /* Align the dropdown below the menu item */
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    min-width: 150px;
+  }
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  /* Profile Section */
+  .profile {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .profile-pic {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: cover; /* Ensures the image fits within the circle */
+  }
+  
+  .profile-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%; /* Align below profile picture */
+    right: 0; /* Align dropdown to the right */
+    background-color: #fff;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    min-width: 150px;
+  }
+  
+  .profile:hover .profile-dropdown {
+    display: block;
+  }
+  
+  .profile-dropdown a {
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .profile-dropdown a:hover {
+    background-color: #ddd;
+  }
+    
+  /*===== Footer Styles =====*/
+  footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    bottom: 0;
+    width: 100%;
+    position: fixed; /* Ensure the footer is not fixed and stays after the content */
+  }
+  
+  .footer-content p {
+    color: white;
+    margin: 5px 0;
+  }
+
+  .back-btn {
+    background-color: #007bff; /* Button background color */
+    color: white; /* Text color */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100px;
+    height: 40px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px; /* Adds space between the Back button and the profile section */
+  }
+  
+  .back-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+
+/* Ensure that content below the header is not hidden behind it */
+body {
+  margin: 0;
+  padding-top: 80px; /* Adjust according to the height of your header */
+}
+
+
+/* Make sure the content wrapper pushes the footer down */
+.content-wrapper {
+  min-height: calc(100vh - 120px); /* 100vh minus the header and footer height */
+  padding-top: 80px; /* This should match the height of your header */
+  padding-bottom: 20px; /* Add some padding to avoid direct collision with the footer */
+}
+

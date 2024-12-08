@@ -1,3 +1,5 @@
+/* Schema for InsuranceClaim Data Object */
+
 const mongoose = require('mongoose');
 
 const insuranceClaimSchema = new mongoose.Schema({

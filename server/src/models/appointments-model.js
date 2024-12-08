@@ -1,3 +1,5 @@
+/* Schema for Appointment Data Object */
+
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({

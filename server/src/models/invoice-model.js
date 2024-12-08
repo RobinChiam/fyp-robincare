@@ -1,3 +1,5 @@
+/* Schema for Invoice Data Object */
+
 const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema({

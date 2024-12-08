@@ -1,0 +1,75 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+  margin: 0;
+  }
+  
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+.login-form, .register-form, .forgot-password-form, .reset-password-form{
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+  }
+  
+.login-form h2, .register-form h2, .forgot-password-form, h2 .reset-password-form h2 {
+    text-align: center;
+    color: #353839;
+    margin-bottom: 20px;
+  }
+  
+.login-form input, .register-form input, .forgot-password-form input, .reset-password-form input{
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+.login-form button, .register-form button, .forgot-password-form button, .reset-password-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #353839;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+.login-form button:hover, .register-form button:hover, .forgot-password-form button:hover, .reset-password-form button:hover {
+    background-color: #007bff;
+  }
+  
+  .login-form p, .register-form p, .forgot-password-form p, .reset-password-form p {
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .login-form p a, .register-form p a, .forgot-password-form p a, .reset-password-form p a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login-form p a:hover, .register-form p a:hover, .forgot-password-form p a:hover, .reset-password-form p a:hover {
+    text-decoration: underline;
+  }
+
+.success-message {
+  color: #28a745;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+

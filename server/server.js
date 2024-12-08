@@ -38,15 +38,15 @@ connectDB();
 
 /* Route Handlers*/
 app.use('/', publicRoutes);
-// app.use('/auth', authRoutes);
-// app.use('/appointments', appointmentRoutes);
-// app.use('/billing', billingRoutes);
-// app.use('/patient', patientRoutes);
-// app.use('/doctor', doctorRoutes);
-// app.use('/admin', adminRoutes);
-// app.use('/medical-records', medicalRecordsRoutes);
-// app.use('/insurance-claims', insuranceClaimsRoutes);
-// app.use('/api', apiRoutes);
+app.use('/auth', authRoutes);
+app.use('/appointments', appointmentRoutes);
+app.use('/billing', billingRoutes);
+app.use('/patient', patientRoutes);
+app.use('/doctor', doctorRoutes);
+app.use('/admin', adminRoutes);
+app.use('/medical-records', medicalRecordsRoutes);
+app.use('/insurance-claims', insuranceClaimsRoutes);
+//app.use('/api', apiRoutes);
 
 /* Start server */
 const PORT = process.env.PORT;

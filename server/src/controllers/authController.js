@@ -1,36 +1,84 @@
 const User = require('../models/user-model');
+const Patient = require('../models/patient-model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const loginHandler = async (req, res) => {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body; // Identifier is IC/Passport Number or Email
 
     try {
-        const user = await User.findOne({ email });
+        // Find the user by IC/Passport Number or Email
+        const user = await User.findOne({ $or: [{ email: identifier }, { icNumber: identifier }] });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        // Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token });
+        // Generate a JWT token
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        // Respond with the token
+        res.status(200).json({ token, role: user.role });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
 
 const registerHandler = async (req, res) => {
-    const { email, password, role, name } = req.body;
+    const { email, password, role, name, phone, icNumber, profilePicture, dob, address, gender, specialization, consultationHours, medicalHistory } = req.body;
 
     try {
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, password: hashedPassword, role, name });
-        await newUser.save();
+
+        // Create the user
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            role,
+            name,
+            phone,
+            icNumber,
+            profilePicture
+        });
+        const savedUser = await newUser.save();
+
+        // Depending on the role, create a Doctor or Patient entry
+        if (role === 'doctor') {
+            const newDoctor = new Doctor({
+                user: savedUser._id,
+                specialization,
+                consultationHours
+            });
+            await newDoctor.save();
+        } else if (role === 'patient') {
+            const newPatient = new Patient({
+                user: savedUser._id,
+                dob,
+                address,
+                gender,
+                medicalHistory
+            });
+            await newPatient.save();
+        }
+
+        // Respond with success
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
 
 const forgetPasswordHandler = async (req, res) => {
 
