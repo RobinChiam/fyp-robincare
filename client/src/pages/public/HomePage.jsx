@@ -35,7 +35,7 @@ const HomePage = () => {
           </Button>
         </Stack>
         <Image
-          src="https://via.placeholder.com/500" // Replace with a relevant healthcare image
+          src="https://img.freepik.com/premium-photo/dynamic-healthcare-photography-doctors-innovation_1281529-16781.jpg" // Replace with a relevant healthcare image
           alt="Healthcare"
           mt={useBreakpointValue({ base: 8, md: 0 })}
         />

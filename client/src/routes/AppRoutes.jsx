@@ -1,5 +1,5 @@
 // src/routes/AppRoutes.jsx
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/public/HomePage";
 import AboutUsPage from "../pages/public/AboutUsPage";
 import ContactUsPage from "../pages/public/ContactUsPage";
@@ -23,6 +23,8 @@ const AppRoutes = () => (
       <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
       <Route path="/dashboard/admin" element={<AdminDashboard />} />
       <Route path="*" element={<Error404Page />} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route path="/landing" element={<Navigate to="/" replace />} />
     </Routes>
 );
 
