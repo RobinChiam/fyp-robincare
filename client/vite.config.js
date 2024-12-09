@@ -13,10 +13,7 @@ export default defineConfig({
       '/admin': 'http://localhost:5000',
       '/medical-records': 'http://localhost:5000',
       '/insurance-claims': 'http://localhost:5000',
-      '/auth': {
-        target:'http://localhost:5000',
-        changeOrigin: true
-      },
+      '/auth': 'http://localhost:5000',
     },
   },
 })

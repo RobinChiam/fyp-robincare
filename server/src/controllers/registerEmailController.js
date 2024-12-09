@@ -9,6 +9,12 @@ registerEmail = (  [
   body('fullName').notEmpty().withMessage('Full Name is required.'),
   body('email').isEmail().withMessage('Invalid email format.'),
   body('dob').notEmpty().withMessage('Date of Birth is required.'),
+  body('phoneNumber')
+    .isMobilePhone()
+    .withMessage('Invalid phone number format.'),
+  body('gender')
+    .isIn(['male', 'female', 'other'])
+    .withMessage('Gender must be male, female, or other.'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters.'),
@@ -22,7 +28,7 @@ registerEmail = (  [
       return res.status(400).json({ errors: errors.array() });
     }
 
-  const { icOrPassport, fullName, email, dob, password } = req.body;
+    const { icOrPassport, fullName, email, dob, phoneNumber, gender, password } = req.body; // Include new fields
 
   try {
     const pin = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit PIN
@@ -33,6 +39,8 @@ registerEmail = (  [
       fullName,
       email,
       dob,
+      phoneNumber, 
+      gender, 
       password,
       pin,
       createdAt: new Date(), // Used with TTL index

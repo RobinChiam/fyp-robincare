@@ -8,9 +8,11 @@ import {
   Input,
   VStack,
   useToast,
+  Select,
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +20,8 @@ const RegisterForm = () => {
     fullName: '',
     email: '',
     dob: '',
+    phoneNumber: '', 
+    gender: '', 
     password: '',
     confirmPassword: '',
   });
@@ -30,11 +34,39 @@ const RegisterForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.icOrPassport) newErrors.icOrPassport = 'IC or Passport is required.';
+    if (!formData.icOrPassport) 
+      newErrors.icOrPassport = 'IC or Passport is required.';
+    if (!/^A\d{8}$/.test(formData.icOrPassport) 
+      && !/^\d{6}-\d{2}-\d{4}$/.test(formData.icOrPassport)) {
+      newErrors.icOrPassport = 'Invalid IC or Passport Format.';
+    }
+    // Check if it's a valid IC number (DDMMYY-XX-XXXX)
+    else if (/^\d{6}-\d{2}-\d{4}$/.test(icOrPassport)) {
+      // Split the IC number to extract the birthdate (YYMMDD)
+      const birthDate = icOrPassport.slice(0, 6); // First 6 digits represent YYMMDD
+      const year = parseInt(birthDate.slice(0, 2));
+      const month = parseInt(birthDate.slice(2, 4));
+      const day = parseInt(birthDate.slice(4, 6));
+  
+      // Validate month and day ranges
+      if (month < 1 || month > 12) {
+        newErrors.icOrPassport = 'Invalid IC or Passport Format.';
+      } else {
+        // Days in each month, considering a leap year for February
+        const daysInMonth = [31, (isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        
+        if (day < 1 || day > daysInMonth[month - 1]) {
+          newErrors.icOrPassport = 'Invalid IC or Passport Format.';
+        }
+      }
+    }
     if (!formData.fullName) newErrors.fullName = 'Full Name is required.';
     if (!formData.email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email))
       newErrors.email = 'Invalid email format.';
     if (!formData.dob) newErrors.dob = 'Date of Birth is required.';
+    if (!formData.phoneNumber || !/^\d{10,15}$/.test(formData.phoneNumber))
+      newErrors.phoneNumber = 'Phone Number must be between 10-15 digits.';
+    if (!formData.gender) newErrors.gender = 'Gender is required.';
     if (!formData.password || formData.password.length < 8)
       newErrors.password = 'Password must be at least 8 characters.';
     if (formData.password !== formData.confirmPassword)
@@ -47,7 +79,7 @@ const RegisterForm = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post('/auth/register', formData);
+      const response = await axios.post('http://localhost:5000/auth/register', formData);
       setEmail(formData.email); // Store email for PIN verification
       toast({
         title: 'Verification email sent!',
@@ -68,7 +100,7 @@ const RegisterForm = () => {
 
   const handlePinVerification = async () => {
     try {
-      const response = await axios.post('/auth/verify-pin', { email, pin });
+      const response = await axios.post('http://localhost:5000/auth/verify-pin', { email, pin });
       toast({
         title: 'Account created successfully!',
         status: 'success',
@@ -128,6 +160,27 @@ const RegisterForm = () => {
                 value={formData.dob}
                 onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
               />
+            </FormControl>
+            <FormControl id="phoneNumber" isRequired>
+              <FormLabel>Phone Number</FormLabel>
+              <Input
+                type="tel"
+                placeholder="Enter your phone number"
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              />
+            </FormControl>
+            <FormControl id="gender" isRequired>
+              <FormLabel>Gender</FormLabel>
+              <Select
+                placeholder="Select your gender"
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </Select>
             </FormControl>
             <FormControl id="password" isRequired>
               <FormLabel>Password</FormLabel>

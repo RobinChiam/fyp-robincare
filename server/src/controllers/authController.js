@@ -1,5 +1,5 @@
 const User = require('../models/user-model');
-const Patient = require('../models/patient-model');
+const Verification = require('../models/verification-model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -12,7 +12,7 @@ const loginHandler = async (req, res) => {
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await User.comparePassword(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
         // Generate a JWT token
@@ -35,6 +35,7 @@ const loginHandler = async (req, res) => {
 const registerHandler = async (req, res) => {
     const { email, pin } = req.body;
   
+    console.log(`Received PIN: ${pin}`);
     try {
       const verification = await Verification.findOne({ email, pin });
   
@@ -44,11 +45,14 @@ const registerHandler = async (req, res) => {
   
       // Create user in User collection
       await User.create({
-        icOrPassport: verification.icOrPassport,
-        fullName: verification.fullName,
+        icNumber: verification.icOrPassport,
+        name: verification.fullName,
         email: verification.email,
+        role: 'patient',
         dob: verification.dob,
-        password: verification.password, // Hash password in production
+        phone: verification.phoneNumber,
+        gender: verification.gender, 
+        password: verification.password, 
       });
   
       // Delete verification record
@@ -56,6 +60,7 @@ const registerHandler = async (req, res) => {
   
       res.status(200).json({ message: 'Account created successfully!' });
     } catch (err) {
+      console.log(err);
       res.status(500).json({ message: 'Verification failed.', error: err.message });
     }
   };
