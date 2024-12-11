@@ -36,7 +36,7 @@ const Navbar = ({ user, onLogout }) => {
       <HStack spacing="8">
         <Box as="a" href="/" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>Home</Box>
         <Menu>
-          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }}>
+          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={'white'}>
             Appointments
           </MenuButton>
           <MenuList>
@@ -68,7 +68,7 @@ const Navbar = ({ user, onLogout }) => {
         {/* User Profile Dropdown */}
         <Menu>
       <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-        <Avatar size="sm" src={user?.profilePicture || "/default-avatar.png"} />
+        <Avatar size="sm" src={'http://localhost:5000/' +  user?.profilePicture} />
       </MenuButton>
       <MenuList>
         <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>

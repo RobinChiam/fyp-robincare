@@ -4,14 +4,11 @@ import {
   Flex,
   Text,
   Link,
-  Button,
   Stack,
-  useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
 
 const Header = () => {
-  const { toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue('blue.500', 'blue.900');
   const textColor = useColorModeValue('white', 'gray.200');
 
@@ -24,9 +21,12 @@ const Header = () => {
         mx="auto"
         color={textColor}
       >
+        {/* Logo */}
         <Text fontSize="xl" fontWeight="bold">
           Healthcare System
         </Text>
+
+        {/* Navigation Links */}
         <Stack direction="row" spacing={4}>
           <Link href="/" fontSize="lg">
             Home
@@ -41,9 +41,17 @@ const Header = () => {
             Blog
           </Link>
         </Stack>
-        <Button onClick={toggleColorMode} colorScheme="whiteAlpha">
-          Toggle Mode
-        </Button>
+
+        {/* Login / Register */}
+        <Stack direction="row" spacing={1} align="center" fontSize="lg" fontWeight="semibold">
+          <Link href="/login" _hover={{ textDecoration: 'underline' }}>
+            Login
+          </Link>
+          <Text>/</Text>
+          <Link href="/register" _hover={{ textDecoration: 'underline' }}>
+            Register
+          </Link>
+        </Stack>
       </Flex>
     </Box>
   );

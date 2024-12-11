@@ -11,6 +11,7 @@ import DoctorDashboard from "../pages/dashboard/DoctorDashboard";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import Error404Page from "../pages/errors/404ErrorPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
+import BlogPage from "../pages/public/BlogPage";
 
 const AppRoutes = () => (
     <Routes>
@@ -27,6 +28,7 @@ const AppRoutes = () => (
       <Route path="/home" element={<Navigate to="/" replace />} />
       <Route path="/landing" element={<Navigate to="/" replace />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+      <Route path ="/blog" element={<BlogPage />} />
     </Routes>
 );
 

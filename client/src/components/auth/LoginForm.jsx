@@ -8,7 +8,10 @@ import {
   Heading,
   Input,
   VStack,
+  HStack,
   useToast,
+  Text,
+  Link,
 } from '@chakra-ui/react';
 
 import { useNavigate } from 'react-router-dom';
@@ -87,9 +90,17 @@ const LoginForm = () => {
         <Button colorScheme="blue" width="100%" onClick={handleLogin}>
           Login
         </Button>
-        <Button variant="link" colorScheme="blue" as="a" href="/reset-password">
-          Forgot Password?
-        </Button>
+        <HStack justify="space-between" width="100%">
+          <Button variant="link" colorScheme="blue" as="a" href="/reset-password">
+            Forgot Password?
+          </Button>
+          <Text fontSize="sm">
+            Don’t have an account?{' '}
+            <Link href="/register" color="blue.500" fontWeight="bold">
+              Click Here
+            </Link>
+          </Text>
+        </HStack>
       </VStack>
     </Box>
   );

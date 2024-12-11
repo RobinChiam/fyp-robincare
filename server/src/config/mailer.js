@@ -21,6 +21,13 @@ ${pin}
 <p>If you did not create an account with us, please ignore this email.</p>
 `;
 
+const contactUsHtml = (username, message) =>`
+<h1>From ${username}</h1>
+
+<p>${message}</p>
+
+`;
+
    const transporter = nodeMailer.createTransport({
         host: 'tactigon.mschosting.com',
         port: 465,
@@ -57,6 +64,21 @@ module.exports = {
         html: verifyPINHtml(name, pin)
     })
         console.log(`Email Sent to ${email}!`);
+        } catch (error) {
+        console.error('Error Sending reset password email: ', error);
+        throw error;
+        }
+    },
+
+    contactInfo: async(req, res, username, message, email) => {
+        try {
+            await transporter.sendMail({
+        from: email,
+        to: process.env.CONTACT_MAIL,
+        subject: `Contact Us`,
+        html: contactUsHtml(username, message)
+    })
+        console.log(`Email from ${email} to ${process.env.CONTACT_MAIL}!`);
         } catch (error) {
         console.error('Error Sending reset password email: ', error);
         throw error;

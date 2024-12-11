@@ -63,7 +63,7 @@ const registerHandler = async (req, res) => {
     } catch (err) {
       console.log(err);
       console.log('Verification failed.');
-      res.status(500).json({ message: 'Verification failed.', error: err.message });
+      res.status(500).json({ message: 'Verification failed  ', error: err.message });
     }
   };
 

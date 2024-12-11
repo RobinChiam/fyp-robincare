@@ -41,8 +41,10 @@ app.use((req, res, next) => {
     next();
 });
 
-/* Serve Static Files */
-app.use(express.static(path.join(__dirname, './public')));
+// /* Serve Static Files */
+// app.use(express.static(path.join(__dirname, './public')));
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, './src/public/uploads')));
 
 /* Connect to MongoDB */
 connectDB();
