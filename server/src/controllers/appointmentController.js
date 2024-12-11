@@ -1,4 +1,5 @@
 const Appointment = require('../models/appointments-model');
+const moment = require('moment');
 
 const createAppointment = async (req, res) => {
     try {
@@ -15,13 +16,13 @@ const createAppointment = async (req, res) => {
 
 const getAppointments = async (req, res) => {
     try {
-        const { _id, role } = req.session.user; // Assuming `req.user` contains authenticated user info
+        const { userId, role } = req.session.user; // Assuming `req.user` contains authenticated user info
         let appointments;
 
         if (role === 'doctor') {
-            appointments = await Appointment.find({ doctorId: _id });
+            appointments = await Appointment.find({ doctorId: userId });
         } else if (role === 'patient') {
-            appointments = await Appointment.find({ patientId: _id });
+            appointments = await Appointment.find({ patientId: userId });
         } else {
             return res.status(403).json({ error: 'Unauthorized access' });
         }
@@ -49,4 +50,37 @@ const updateAppointmentStatus = async (req, res) => {
     }
 };
 
-module.exports = { createAppointment, getAppointments, updateAppointmentStatus };
+const todayAppointments = async (req, res) => {
+    try {
+        const doctorId = req.session.user._id; // Assuming req.user is populated by verifyDoctor middleware
+        const todayStart = moment().startOf("day").toDate();
+        const todayEnd = moment().endOf("day").toDate();
+    
+        // Fetch today's appointments for the logged-in doctor
+        const appointments = await Appointment.find({
+          doctor: doctorId,
+          date: { $gte: todayStart, $lte: todayEnd },
+        });
+    
+        // Calculate appointment statistics
+        const totalAppointments = appointments.length;
+        const pendingAppointments = appointments.filter(
+          (appt) => appt.status === "Pending"
+        ).length;
+        const completedAppointments = appointments.filter(
+          (appt) => appt.status === "Completed"
+        ).length;
+    
+        res.status(200).json({
+          totalAppointments,
+          pendingAppointments,
+          completedAppointments,
+          appointments,
+        });
+      } catch (error) {
+        console.error("Error fetching doctor's appointments:", error.message);
+        res.status(500).json({ error: "Failed to fetch appointments" });
+      }
+    };
+
+module.exports = { createAppointment, getAppointments, updateAppointmentStatus, todayAppointments };
