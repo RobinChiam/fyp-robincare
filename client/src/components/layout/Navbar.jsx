@@ -68,7 +68,7 @@ const Navbar = ({ user, onLogout }) => {
         {/* User Profile Dropdown */}
         <Menu>
       <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-        <Avatar size="sm" src={'http://localhost:5000/' +  user?.profilePicture} />
+        <Avatar size="md" src={'http://localhost:5000' +  user?.profilePicture} />
       </MenuButton>
       <MenuList>
         <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>

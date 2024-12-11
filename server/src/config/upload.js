@@ -5,7 +5,7 @@ const path = require('path');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // Set the destination directory for uploaded files
-        cb(null, path.join(__dirname, '../public/uploads/profile-picture'));
+        cb(null, path.join(__dirname, '../../public/uploads/profile-picture'));
     },
     filename: function (req, file, cb) {
         // Set the file name (e.g., userID + current timestamp + file extension)
