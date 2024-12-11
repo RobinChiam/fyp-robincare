@@ -1,7 +1,9 @@
 const User = require('../models/user-model');
 const Verification = require('../models/verification-model');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const {resetPasswordInfo} = require('../config/mailer');
 
 const loginHandler = async (req, res) => {
     const { identifier, password } = req.body; // Identifier is IC/Passport Number or Email
@@ -12,18 +14,16 @@ const loginHandler = async (req, res) => {
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         // Compare passwords
-        const isMatch = await User.comparePassword(password, user.password);
+        const isMatch = await user.comparePassword(password, user.password);
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-        // Generate a JWT token
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+       // If authentication is successful, create a session and redirect to dashboard
+       req.session.user = user; // Assuming you're using session-based authentication
+       req.session.isAuthenticated = true;
 
         // Respond with the token
-        res.status(200).json({ token, role: user.role });
+         console.log('Login successful! ' + `Welcome ${user.name}`);
+        res.status(200).json({ user: req.session.user });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
@@ -58,9 +58,11 @@ const registerHandler = async (req, res) => {
       // Delete verification record
       await Verification.deleteOne({ email });
   
+      console.log('Account created successfully!');
       res.status(200).json({ message: 'Account created successfully!' });
     } catch (err) {
       console.log(err);
+      console.log('Verification failed.');
       res.status(500).json({ message: 'Verification failed.', error: err.message });
     }
   };
@@ -69,6 +71,8 @@ const registerHandler = async (req, res) => {
 
 const forgetPasswordHandler = async (req, res) => {
 
+  console.log("forgetPasswordHandler Initiated");
+  console.log(`Email Address: ${req.body.email}`);
     /* === Forgot Password === */
     const {email} = req.body;
     try{
@@ -80,53 +84,55 @@ const forgetPasswordHandler = async (req, res) => {
 
     //Generate a reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-        
+    console.log(`Token Generated: ${resetToken}`);
     // Set token and expiration on user document
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiration
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 60; // 1 hour expiration
     await user.save();
-    await info(req, res, user.username, resetToken, user.email);
+    console.log(`User Updated: ${user.name}`);
+    await resetPasswordInfo(req, res, user.name, resetToken, user.email);
         console.log("Email Sent!");
-    }catch (error) {
-        console.error(error);
-        res.render('forgot-password', { errorMessage: 'An error occurred. Please try again.' });
-    }
+        res.status(200).json({ message: 'Password reset email sent.' });
+      } catch (error) {
+        res.status(500).json({ message: 'An error occurred.' });
+      }
 
 };
 
 const resetPasswordHandler = async (req, res) => {
 
-    /* === Reset Password === */
-    const { password, confirmPassword } = req.body;
+  const { token } = req.params;
+  const { password } = req.body;
 
-    try {
-        // Find the user by reset token
+  console.log('resetPasswordHandler Initiated');
+  console.log(`Token: ${token}`);
+  try {
     const user = await User.findOne({
-        resetPasswordToken: req.params.token,
-        resetPasswordExpires: { $gt: Date.now() },
-      });
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).json({ message: 'Invalid or expired token.' });
 
-      if (password !== confirmPassword) {
-        console.log(`Passwords do not match`);
-        return res.render('reset-password', { errorMessage: 'Passwords do not match.' });
-        }
-
-      if (!user) {
-        console.log(`Invalid Password Reset Token`);
-        return res.render('forgot-password', { errorMessage: 'Password reset token is invalid or has expired.' });
-      }
-
-    // Update the password
-    user.password = password; 
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.password = password;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
     await user.save();
-    console.log(`Password has been reset to ${password}`);
-    } catch (error) {
-    console.error(error);
-    res.render('reset-password', { errorMessage: 'An error occurred. Please try again.', token: req.params.token });
-    }
+
+    res.status(200).json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred.' });
+  }
 };
 
+const logoutHandler = (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      res.status(200).json({ message: 'Logout successful' });
+    }); 
+  };
 
-module.exports = { loginHandler, registerHandler, forgetPasswordHandler, resetPasswordHandler };
+
+module.exports = { loginHandler, registerHandler, forgetPasswordHandler, resetPasswordHandler, logoutHandler};

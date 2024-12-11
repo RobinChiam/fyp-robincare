@@ -15,13 +15,13 @@ const createAppointment = async (req, res) => {
 
 const getAppointments = async (req, res) => {
     try {
-        const { userId, role } = req.user; // Assuming `req.user` contains authenticated user info
+        const { _id, role } = req.session.user; // Assuming `req.user` contains authenticated user info
         let appointments;
 
         if (role === 'doctor') {
-            appointments = await Appointment.find({ doctorId: userId });
+            appointments = await Appointment.find({ doctorId: _id });
         } else if (role === 'patient') {
-            appointments = await Appointment.find({ patientId: userId });
+            appointments = await Appointment.find({ patientId: _id });
         } else {
             return res.status(403).json({ error: 'Unauthorized access' });
         }

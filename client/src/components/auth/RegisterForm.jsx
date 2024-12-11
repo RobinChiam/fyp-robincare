@@ -12,9 +12,11 @@ import {
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 const RegisterForm = () => {
+  const navigate = useNavigate(); // Hook for navigation
   const [formData, setFormData] = useState({
     icOrPassport: '',
     fullName: '',
@@ -107,6 +109,7 @@ const RegisterForm = () => {
         isClosable: true,
       });
       // Redirect to login or dashboard
+      navigate('/login');
     } catch (error) {
       toast({
         title: 'PIN verification failed.',

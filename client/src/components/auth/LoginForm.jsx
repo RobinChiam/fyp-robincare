@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -10,9 +11,12 @@ import {
   useToast,
 } from '@chakra-ui/react';
 
+import { useNavigate } from 'react-router-dom';
+
 const LoginForm = () => {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    identifier: '', // This will hold either IC/Passport or Email
+    identifier: '', // Holds either IC/Passport or Email
     password: '',
   });
 
@@ -24,34 +28,35 @@ const LoginForm = () => {
   };
 
   const handleLogin = async () => {
-    // Simulate API call for login
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
+      // Send login request with credentials
+      const response = await axios.post(
+        'http://localhost:5000/auth/login',
+        credentials,
+        { withCredentials: true } // Ensure cookies are sent and received
+      );
+
+      const { user } = response.data; // User data from session
+      toast({
+        title: 'Login successful.',
+        status: 'success',
+        isClosable: true,
       });
 
-      if (response.ok) {
-        toast({
-          title: 'Login successful.',
-          status: 'success',
-          isClosable: true,
-        });
-        // Redirect user to dashboard
-      } else {
-        const error = await response.json();
-        toast({
-          title: 'Login failed.',
-          description: error.message || 'Invalid credentials.',
-          status: 'error',
-          isClosable: true,
-        });
+      // Redirect based on role
+      if (user.role === 'patient') {
+        navigate('/dashboard/patient');
+      } else if (user.role === 'doctor') {
+        navigate('/dashboard/doctor');
+      } else if (user.role === 'admin') {
+        navigate('/dashboard/admin');
       }
     } catch (err) {
+      console.error("Login error:", err.response?.data || err.message);
       toast({
-        title: 'Network error.',
-        description: 'Failed to login.',
+        title: 'Login failed.',
+        description:
+          err.response?.data?.message || 'Invalid credentials or network error.',
         status: 'error',
         isClosable: true,
       });

@@ -4,7 +4,7 @@ const { verifyPINInfo } = require('../config/mailer');
 const { body, validationResult } = require('express-validator');
 
 
-registerEmail = (  [
+const registerEmail = (  [
   body('icOrPassport').notEmpty().withMessage('IC or Passport is required.'),
   body('fullName').notEmpty().withMessage('Full Name is required.'),
   body('email').isEmail().withMessage('Invalid email format.'),
@@ -47,7 +47,6 @@ registerEmail = (  [
     });
 
     verifyPINInfo(req, res, fullName, pin, email);  // Send verification email
-    console.log(`Email sent to ${email}`);
 
     res.status(200).json({ message: 'Verification email sent.' });
   } catch (err) {

@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
       type: String, // File path to the uploaded image
       default: '/profile/placeholder.png' // Default file path if none is provided
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 });
 
 /** Compare Password */

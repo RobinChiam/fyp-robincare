@@ -6,7 +6,7 @@ const resetPasswordHtml = (username, token, host) =>`
     
     <p>Click below to reset your password.</p>
     
-    <a href="http://${host}/auth/reset-password/${token}">Reset Password</a>
+    <a href="http://localhost:5173/reset-password/${token}">Reset Password</a>
     
     <p>If you did not request a password reset, please ignore this email.</p>
     `;
@@ -41,7 +41,9 @@ module.exports = {
         to: email,
         subject: 'Reset Password',
         html: resetPasswordHtml(username, token, req.headers.host)
-    })} catch (error) {
+    })
+        console.log(`Email Sent to ${email}!`);
+        } catch (error) {
         console.error('Error Sending reset password email: ', error);
         throw error;
         }
@@ -53,7 +55,9 @@ module.exports = {
         to: email,
         subject: `Verify PIN for ${name}`,
         html: verifyPINHtml(name, pin)
-    })} catch (error) {
+    })
+        console.log(`Email Sent to ${email}!`);
+        } catch (error) {
         console.error('Error Sending reset password email: ', error);
         throw error;
         }

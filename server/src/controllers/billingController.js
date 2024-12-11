@@ -2,7 +2,7 @@ const Invoice = require('../models/invoice-model');
 
 const fetchInvoices = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const { userId } = req.session.user._id;
         const invoices = await Invoice.find({ patientId: userId });
 
         res.status(200).json(invoices);

@@ -2,7 +2,7 @@ const Patient = require('../models/patient-model');
 
 const getProfile = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;
         const profile = await Patient.findById(userId);
 
         if (!profile) return res.status(404).json({ error: 'Profile not found' });
@@ -14,7 +14,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;
         const updatedProfile = await Patient.findByIdAndUpdate(
             userId,
             req.body,

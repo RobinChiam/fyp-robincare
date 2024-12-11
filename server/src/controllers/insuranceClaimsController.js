@@ -15,7 +15,7 @@ const submitClaim = async (req, res) => {
 
 const getClaims = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;
         const claims = await InsuranceClaim.find({ patientId: userId });
 
         res.status(200).json(claims);

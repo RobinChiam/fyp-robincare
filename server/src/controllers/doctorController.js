@@ -1,8 +1,8 @@
-const User = require('../models/User');
+const User = require('../models/user-model');
 
 const getProfile = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;
         const profile = await User.findById(userId);
 
         if (!profile) return res.status(404).json({ error: 'Profile not found' });
@@ -14,7 +14,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;        
         const updatedProfile = await User.findByIdAndUpdate(
             userId,
             req.body,

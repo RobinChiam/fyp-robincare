@@ -15,7 +15,7 @@ const addRecord = async (req, res) => {
 
 const getRecords = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const userId = req.session.user._id;
         const records = await HealthRecord.find({ patientId: userId });
 
         res.status(200).json(records);

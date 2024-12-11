@@ -25,10 +25,21 @@ const apiRoutes = require('./src/routes/apiRoutes');
 const app = express();
 
 /* Middleware */
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL, // URL of your React frontend
+    credentials: true,             // Allow cookies to be sent
+  }));
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(sessionMiddleware); // Use session middleware
+app.use(cookieParser());
 
+/* Make user Object available globally. */
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null; // If user is logged in, make user available globally
+    next();
+});
 
 /* Serve Static Files */
 app.use(express.static(path.join(__dirname, './public')));
@@ -46,7 +57,7 @@ app.use('/doctor', doctorRoutes);
 app.use('/admin', adminRoutes);
 app.use('/medical-records', medicalRecordsRoutes);
 app.use('/insurance-claims', insuranceClaimsRoutes);
-//app.use('/api', apiRoutes);
+app.use('/api', apiRoutes);
 
 /* Start server */
 const PORT = process.env.PORT;
