@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const {resetPasswordInfo} = require('../config/mailer');
+const Patient = require('../models/patient-model');
 
 const loginHandler = async (req, res) => {
     const { identifier, password } = req.body; // Identifier is IC/Passport Number or Email
@@ -33,39 +34,46 @@ const loginHandler = async (req, res) => {
 
 
 const registerHandler = async (req, res) => {
-    const { email, pin } = req.body;
-  
-    console.log(`Received PIN: ${pin}`);
-    try {
-      const verification = await Verification.findOne({ email, pin });
-  
-      if (!verification) {
-        return res.status(400).json({ message: 'Invalid PIN.' });
-      }
-  
-      // Create user in User collection
-      await User.create({
-        icNumber: verification.icOrPassport,
-        name: verification.fullName,
-        email: verification.email,
-        role: 'patient',
-        dob: verification.dob,
-        phone: verification.phoneNumber,
-        gender: verification.gender, 
-        password: verification.password, 
-      });
-  
-      // Delete verification record
-      await Verification.deleteOne({ email });
-  
-      console.log('Account created successfully!');
-      res.status(200).json({ message: 'Account created successfully!' });
-    } catch (err) {
-      console.log(err);
-      console.log('Verification failed.');
-      res.status(500).json({ message: 'Verification failed  ', error: err.message });
+  const { email, pin } = req.body;
+
+  console.log(`Received PIN: ${pin}`);
+  try {
+    const verification = await Verification.findOne({ email, pin });
+
+    if (!verification) {
+      return res.status(400).json({ message: 'Invalid PIN or email.' });
     }
-  };
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'An account with this email already exists.' });
+    }
+
+    // Create user in User collection
+    await User.create({
+      icNumber: verification.icOrPassport,
+      name: verification.fullName,
+      email: verification.email,
+      role: 'patient',
+      dob: verification.dob,
+      phone: verification.phoneNumber,
+      gender: verification.gender,
+      password: verification.password,
+    });
+
+    // Delete verification record
+    await Verification.deleteOne({ email });
+
+    console.log('Account created successfully!');
+    res.status(200).json({ message: 'Account created successfully!' });
+  } catch (err) {
+    console.error('Error during PIN verification:', err);
+    res.status(500).json({ message: 'Verification failed.', error: err.message });
+  }
+};
+
+
 
 
 

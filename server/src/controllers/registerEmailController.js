@@ -3,8 +3,7 @@ const Verification = require('../models/verification-model'); // Temporary verif
 const { verifyPINInfo } = require('../config/mailer');
 const { body, validationResult } = require('express-validator');
 
-
-const registerEmail = (  [
+const registerEmail = ([
   body('icOrPassport').notEmpty().withMessage('IC or Passport is required.'),
   body('fullName').notEmpty().withMessage('Full Name is required.'),
   body('email').isEmail().withMessage('Invalid email format.'),
@@ -21,17 +20,22 @@ const registerEmail = (  [
   body('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Passwords do not match.'),
-],async (req, res, next) => {
-
+], async (req, res) => {
   console.log(req.body);
   const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-    const { icOrPassport, fullName, email, dob, phoneNumber, gender, password } = req.body; // Include new fields
+  const { icOrPassport, fullName, email, dob, phoneNumber, gender, password } = req.body;
 
   try {
+    const existingVerification = await Verification.findOne({ email });
+
+    if (existingVerification) {
+      return res.status(400).json({ message: 'A verification record already exists for this email. Please check your email for the PIN.' });
+    }
+
     const pin = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit PIN
 
     // Save temporary user data and PIN in Verification collection
@@ -40,14 +44,14 @@ const registerEmail = (  [
       fullName,
       email,
       dob,
-      phoneNumber, 
-      gender, 
+      phoneNumber,
+      gender,
       password,
       pin,
       createdAt: new Date(), // Used with TTL index
     });
 
-    verifyPINInfo(req, res, fullName, pin, email);  // Send verification email
+    verifyPINInfo(req, res, fullName, pin, email); // Send verification email
 
     res.status(200).json({ message: 'Verification email sent.' });
   } catch (err) {
@@ -56,5 +60,3 @@ const registerEmail = (  [
 });
 
 module.exports = registerEmail;
-
-

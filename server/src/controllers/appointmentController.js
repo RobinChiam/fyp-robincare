@@ -5,14 +5,53 @@ const createAppointment = async (req, res) => {
     try {
         const { patientId, doctorId, date, timeSlot } = req.body;
 
+        // Parse the appointment date and time
+        const appointmentDate = new Date(date); // Convert the provided date to a Date object
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Strip time from the current date
+        const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Current time + 2 hours
+
+        // Validate that the appointment date is not before today
+        if (appointmentDate < today) {
+            return res.status(400).json({ message: 'Cannot book an appointment for a past date.' });
+        }
+
+        // Parse the appointment time
+        const appointmentDateTime = new Date(`${date}T${timeSlot.split(' - ')[0]}:00`);
+
+        // Validate that the appointment time is at least 2 hours from now
+        if (appointmentDateTime < now) {
+            return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
+        }
+
+        if (appointmentDateTime < twoHoursFromNow) {
+            return res.status(400).json({ message: 'Appointments must be at least 2 hours from now.' });
+        }
+
+        // Check if the selected time slot is already booked
+        const conflictingAppointment = await Appointment.findOne({
+            doctorId,
+            date,
+            timeSlot,
+            status: { $ne: 'rejected' } // Exclude rejected appointments
+        });
+
+        if (conflictingAppointment) {
+            return res.status(400).json({ message: 'Time slot already booked.' });
+        }
+
+        // Create a new appointment
         const newAppointment = new Appointment({ patientId, doctorId, date, timeSlot });
         await newAppointment.save();
 
-        res.status(201).json({ message: 'Appointment created', appointment: newAppointment });
+        res.status(201).json({ message: 'Appointment created successfully.', appointment: newAppointment });
     } catch (err) {
+        console.error('Error creating appointment:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
 
 const getAppointments = async (req, res) => {
     try {

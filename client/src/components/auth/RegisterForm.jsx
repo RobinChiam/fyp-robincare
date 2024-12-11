@@ -144,28 +144,29 @@ const RegisterForm = () => {
 
   const handleCompleteRegistration = async () => {
     setIsLoading(true);
-
+  
     const formDataToSend = new FormData();
     if (selectedFile) {
+      // Append the file only if a file was selected
       formDataToSend.append('profilePicture', selectedFile);
     }
     formDataToSend.append('email', formData.email);
-
+  
     try {
       const response = await axios.post('http://localhost:5000/api/profilePic', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+  
       toast({
         title: 'Registration Complete',
-        description: response.data.message,
+        description: response.data.message || 'Your account has been successfully registered.',
         status: 'success',
         isClosable: true,
       });
       setIsCompleted(true);
-      setTimeout(() => navigate('/login'), 4000);
+      setTimeout(() => navigate('/login'), 4000); // Redirect to login after a delay
     } catch (err) {
       toast({
         title: 'Upload Failed',
@@ -177,7 +178,7 @@ const RegisterForm = () => {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <Box px={8} py={12} maxW="lg" mx="auto">
       {isCompleted ? (
@@ -337,6 +338,9 @@ const RegisterForm = () => {
                 <FormControl id="profilePicture">
                   <FormLabel>Profile Picture (Optional)</FormLabel>
                   <Input type="file" accept="image/*" onChange={handleFileSelection} />
+                  <Text fontSize="sm" color="gray.500">
+                    You can skip this step and upload a profile picture later in your profile settings.
+                  </Text>
                 </FormControl>
                 <HStack width="100%">
                   <Button variant="outline" onClick={handlePreviousStep}>
@@ -353,6 +357,7 @@ const RegisterForm = () => {
                 </HStack>
               </>
             )}
+
           </VStack>
         </>
       )}

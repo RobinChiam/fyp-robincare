@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 
 const patientSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User object
-    dob: { type: Date, required: true },
-    address: { type: String },
-    medicalHistory: [{ type: String }], // List of past medical conditions
+    address: { type: String, default: '' }, // Optional: Default to an empty string
+    medicalHistory: [{ type: String }], // Optional: An array of past medical conditions
     createdAt: { type: Date, default: Date.now },
-}, { timestamps: true }, { collection: 'patients' });
+}, { timestamps: true });
 
 module.exports = mongoose.model('Patient', patientSchema);
+
