@@ -1,4 +1,5 @@
-const InsuranceClaim = require('../models/claims-model');
+const InsuranceClaim = require('../models/insuranceclaims-model');
+
 
 const submitClaim = async (req, res) => {
     try {
