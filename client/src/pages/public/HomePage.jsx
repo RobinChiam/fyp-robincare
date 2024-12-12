@@ -33,7 +33,7 @@ const HomePage = () => {
             gap={8}
           >
             <Stack spacing={6} maxW="lg">
-              <Heading as="h1" size="2xl">
+              <Heading as="h1" size="2xl" color={'blackAlpha.800'}>
                 Your Health, Our Priority
               </Heading>
               <Text fontSize="lg" color="gray.600">
@@ -59,10 +59,10 @@ const HomePage = () => {
 
           {/* Feature Section */}
           <Box py={10}>
-            <Heading as="h2" size="xl" textAlign="center" mb={6}>
+            <Heading as="h2" size="xl" textAlign="center" mb={6} color={'black'}>
               Why Choose Us?
             </Heading>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} color={'black'}>
               <Feature
                 title="Expert Doctors"
                 description="Our platform connects you with experienced and certified healthcare professionals."
@@ -83,10 +83,10 @@ const HomePage = () => {
 
           {/* Testimonials Section */}
           <Box py={10}>
-            <Heading as="h2" size="xl" textAlign="center" mb={6}>
+            <Heading as="h2" size="xl" textAlign="center" mb={6} color={'black'}>
               What Our Users Say
             </Heading>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} color={'black'}>
               <Testimonial
                 name="John Doe"
                 feedback="This platform is a game-changer. Booking appointments is now effortless!"
@@ -95,7 +95,7 @@ const HomePage = () => {
               <Testimonial
                 name="Jane Smith"
                 feedback="I love having all my health records in one place. Highly recommend it!"
-                avatar="https://via.placeholder.com/80"
+                avatar="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1cWe94fVb7IIMSCrO_U6x9lFykVNKwWJ9dg&s"
               />
             </SimpleGrid>
           </Box>

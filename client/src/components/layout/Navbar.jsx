@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Flex,
   Box,
@@ -14,13 +14,32 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FaSun, FaMoon } from "react-icons/fa";
-import '../../styles/themeToggle.css';
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, clearUser } from "../../features/userSlice";
+import axios from "axios";
 
-const Navbar = ({ user, onLogout }) => {
-    
+const Navbar = ({ onLogout }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const textColor = useColorModeValue("black", "white");
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.userDetails);
 
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userResponse = await axios.get("http://localhost:5000/api/users/me", {
+          withCredentials: true,
+        });
+        dispatch(setUser(userResponse.data)); // Save user to Redux
+      } catch (error) {
+        console.error("Error fetching user:", error.message);
+        dispatch(clearUser()); // Clear user state on error
+      }
+    };
+
+    fetchUser();
+  }, [dispatch]);
 
   return (
     <Flex
@@ -32,9 +51,11 @@ const Navbar = ({ user, onLogout }) => {
       justify="space-between"
       align="center"
     >
-      {/* Left Side - Navigation Links */}
+      {/* Navigation Links */}
       <HStack spacing="8">
-        <Box as="a" href="/" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>Home</Box>
+        <Box as="a" href="/" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
+          Home
+        </Box>
         <Menu>
           <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={'white'}>
             Appointments
@@ -48,12 +69,13 @@ const Navbar = ({ user, onLogout }) => {
             </MenuItem>
           </MenuList>
         </Menu>
-        <Box as="a" href="/dashboard/patient/records" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>Health Records</Box>
+        <Box as="a" href="/dashboard/patient/records" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
+          Health Records
+        </Box>
       </HStack>
 
-      {/* Right Side - User Profile and Theme Toggle */}
+      {/* User Profile and Theme Toggle */}
       <HStack spacing="6" align="center">
-        {/* Theme Toggle IconButton */}
         <IconButton
           aria-label="Toggle theme"
           icon={colorMode === "light" ? <FaSun /> : <FaMoon />}
@@ -65,20 +87,25 @@ const Navbar = ({ user, onLogout }) => {
           _hover={{ bg: "transparent" }}
         />
 
-        {/* User Profile Dropdown */}
-        <Menu>
-      <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-        <Avatar size="md" src={'http://localhost:5000' +  user?.profilePicture} />
-      </MenuButton>
-      <MenuList>
-        <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>
-          Edit Account
-        </MenuItem>
-        <MenuItem onClick={onLogout} color={textColor}>
-          Logout
-        </MenuItem>
-      </MenuList>
-    </Menu>
+        {user ? (
+          <Menu>
+            <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
+              <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
+            </MenuButton>
+            <MenuList>
+              <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>
+                Edit Account
+              </MenuItem>
+              <MenuItem onClick={onLogout} color={textColor}>
+                Logout
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
+          <Button as="a" href="/login" colorScheme="blue">
+            Login
+          </Button>
+        )}
       </HStack>
     </Flex>
   );

@@ -13,6 +13,7 @@ import Error404Page from "../pages/errors/404ErrorPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import BlogPage from "../pages/public/BlogPage";
 import BookAppointment from "../pages/patient/BookAppointment";
+import TermsPrivacyPage from "../pages/public/TermsPrivacyPage";
 
 const AppRoutes = () => (
     <Routes>
@@ -31,6 +32,7 @@ const AppRoutes = () => (
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path ="/blog" element={<BlogPage />} />
       <Route path ="/dashboard/patient/book" element={<BookAppointment />} />
+      <Route path ="/terms-and-privacy" element={<TermsPrivacyPage />} />
     </Routes>
 );
 

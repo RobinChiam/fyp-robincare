@@ -13,13 +13,15 @@ import {
   Text,
   Link,
 } from '@chakra-ui/react';
-
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../../features/userSlice';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [credentials, setCredentials] = useState({
-    identifier: '', // Holds either IC/Passport or Email
+    identifier: '',
     password: '',
   });
 
@@ -32,14 +34,14 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      // Send login request with credentials
       const response = await axios.post(
         'http://localhost:5000/auth/login',
         credentials,
-        { withCredentials: true } // Ensure cookies are sent and received
+        { withCredentials: true }
       );
 
-      const { user } = response.data; // User data from session
+      const { user } = response.data;
+      dispatch(setUser(user)); // Save user to Redux
       toast({
         title: 'Login successful.',
         status: 'success',
@@ -55,11 +57,10 @@ const LoginForm = () => {
         navigate('/dashboard/admin');
       }
     } catch (err) {
-      console.error("Login error:", err.response?.data || err.message);
+      console.error('Login error:', err.response?.data || err.message);
       toast({
         title: 'Login failed.',
-        description:
-          err.response?.data?.message || 'Invalid credentials or network error.',
+        description: err.response?.data?.message || 'Invalid credentials or network error.',
         status: 'error',
         isClosable: true,
       });
@@ -68,6 +69,15 @@ const LoginForm = () => {
 
   return (
     <Box px={8} py={12} maxW="lg" mx="auto">
+      <Button
+        variant="link"
+        colorScheme="blue"
+        mb={6}
+        onClick={() => navigate('/')}
+      >
+        Back to Home
+      </Button>
+
       <Heading mb={6}>Login</Heading>
       <VStack spacing={4}>
         <FormControl id="identifier" isRequired>

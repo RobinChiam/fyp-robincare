@@ -9,82 +9,65 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from "../../components/layout/Navbar"; // Import Navbar component
+import Navbar from "../../components/layout/Navbar";
 
 const PatientDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserAndAppointments = async () => {
+    const fetchAppointments = async () => {
       try {
-        const userResponse = await axios.get("http://localhost:5000/api/users/me", {
-          withCredentials: true,
-        });
-        setUser(userResponse.data);
-
         const appointmentsResponse = await axios.get(
           "http://localhost:5000/appointments/my-appointments",
           { withCredentials: true }
         );
         setAppointments(appointmentsResponse.data.appointments || []);
       } catch (error) {
-        console.error("Error fetching data:", error.message);
+        console.error("Error fetching appointments:", error.message);
         navigate("/login");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserAndAppointments();
+    fetchAppointments();
   }, [navigate]);
 
   const handleLogout = async () => {
     try {
-      // Send a POST request to the logout endpoint
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:5000/auth/logout",
         {},
-        { withCredentials: true } // Ensure cookies are sent with the request
+        { withCredentials: true }
       );
-      console.log(response.data.message); // Log the success message
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
     } catch (error) {
       console.error("Error during logout:", error.message);
     }
   };
-  
 
   return (
     <Box>
       {/* Navbar */}
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar onLogout={handleLogout} />
 
       {/* Main Content */}
       <Box py="10" px="6">
-        <Heading mb="4">Welcome, {user?.name || "Patient"}!</Heading>
-        <Text mb="6">
-          Here is your personalized dashboard with upcoming appointments, medical records, and more.
-        </Text>
+        <Heading mb="4">Welcome to Your Dashboard!</Heading>
+        <Text mb="6">Here is your personalized dashboard with upcoming appointments, medical records, and more.</Text>
         <Box>
-          <Heading size="md" mb="4">
-            Upcoming Appointments
-          </Heading>
-          {appointments.length > 0 ? (
+          <Heading size="md" mb="4">Upcoming Appointments</Heading>
+          {loading ? (
+            <Spinner />
+          ) : appointments.length > 0 ? (
             <VStack align="start" spacing="4">
               {appointments.map((appt) => (
                 <Box key={appt.id} p="4" borderWidth="1px" borderRadius="md">
-                  <Text>
-                    <strong>Date:</strong> {appt.date}
-                  </Text>
-                  <Text>
-                    <strong>Time:</strong> {appt.time}
-                  </Text>
-                  <Text>
-                    <strong>Doctor:</strong> {appt.doctorName}
-                  </Text>
+                  <Text><strong>Date:</strong> {appt.date}</Text>
+                  <Text><strong>Time:</strong> {appt.time}</Text>
+                  <Text><strong>Doctor:</strong> {appt.doctorName}</Text>
                 </Box>
               ))}
             </VStack>
