@@ -5,30 +5,29 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const {resetPasswordInfo} = require('../config/mailer');
 const Patient = require('../models/patient-model');
+require('dotenv').config();
 
 const loginHandler = async (req, res) => {
-    const { identifier, password } = req.body; // Identifier is IC/Passport Number or Email
+  const { identifier, password } = req.body;
+  try {
+      const user = await User.findOne({ $or: [{ email: identifier }, { icNumber: identifier }] });
+      const isMatch = await user.comparePassword(password, user.password);
+      if (!user || !isMatch) {
+          return res.status(401).json({ error: 'Invalid credentials' });
+      }
 
-    try {
-        // Find the user by IC/Passport Number or Email
-        const user = await User.findOne({ $or: [{ email: identifier }, { icNumber: identifier }] });
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        // Compare passwords
-        const isMatch = await user.comparePassword(password, user.password);
-        if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
-
-       // If authentication is successful, create a session and redirect to dashboard
-       req.session.user = user; // Assuming you're using session-based authentication
-       req.session.isAuthenticated = true;
-
-        // Respond with the token
-         console.log('Login successful! ' + `Welcome ${user.name}`);
-        res.status(200).json({ user: req.session.user });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
-    }
+      // Generate a JWT
+      const token = jwt.sign(
+          { id: user._id, role: user.role },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+      );
+      
+      res.status(200).json({ message: 'Login successful', token, user });
+  } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Server error' });
+  }
 };
 
 
@@ -132,15 +131,15 @@ const resetPasswordHandler = async (req, res) => {
   }
 };
 
-const logoutHandler = (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Logout failed' });
-      }
-      res.status(200).json({ message: 'Logout successful' });
-    }); 
-  };
+// const logoutHandler = (req, res) => {
+//     req.session.destroy((err) => {
+//       if (err) {
+//         console.error(err);
+//         return res.status(500).json({ error: 'Logout failed' });
+//       }
+//       res.status(200).json({ message: 'Logout successful' });
+//     }); 
+//   };
 
 
-module.exports = { loginHandler, registerHandler, forgetPasswordHandler, resetPasswordHandler, logoutHandler};
+module.exports = { loginHandler, registerHandler, forgetPasswordHandler, resetPasswordHandler};

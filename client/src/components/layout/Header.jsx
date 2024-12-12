@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Flex, Text, Stack, Avatar, Menu, MenuButton, MenuList, MenuItem, Button, Link } from '@chakra-ui/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearUser } from '../../features/userSlice';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
@@ -10,14 +10,10 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const onLogout = async () => {
-    try {
-      await axios.post('http://localhost:5000/auth/logout', {}, { withCredentials: true });
-      dispatch(clearUser()); // Clear user from Redux
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+  const onLogout = () => {
+    localStorage.removeItem('token'); // Remove JWT
+    dispatch(clearUser()); // Clear Redux state
+    navigate('/login');
   };
 
   return (
@@ -45,10 +41,16 @@ const Header = () => {
                 <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
               </MenuButton>
               <MenuList>
-                <MenuItem as="a" href="/dashboard/patient">Dashboard</MenuItem>
-                <MenuItem as="a" href="/dashboard/patient/edit">Edit Account</MenuItem>
-                <MenuItem onClick={onLogout}>Logout</MenuItem>
-              </MenuList>
+              <MenuItem as="a" href="/dashboard/patient" color="black">
+                Dashboard
+              </MenuItem>
+              <MenuItem as="a" href="/dashboard/patient/edit" color="black">
+                Edit Account
+              </MenuItem>
+              <MenuItem onClick={onLogout} color="black">
+                Logout
+              </MenuItem>
+            </MenuList>
             </Menu>
           ) : (
             <Stack direction="row" spacing={1} align="center" fontSize="lg" fontWeight="semibold">

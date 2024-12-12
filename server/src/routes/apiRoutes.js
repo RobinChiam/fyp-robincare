@@ -7,30 +7,22 @@ require('dotenv').config();
 const upload = require('../config/upload'); 
 const Doctor = require('../models/doctor-model'); // Adjust the path as per your project structure
 const Patient = require('../models/patient-model');
+const authMiddleware = require('../middleware/authMiddleware');
 
 
-router.get('/users/me', async (req, res) => {
+router.get('/users/me', authMiddleware(), async (req, res) => {
     try {
-        console.log("Request user:", req.session.user);
-        console.log("Request user:", req.session.user._id);
-        const userId = req.session.user._id;
-        const user = await User.findById(userId).select('-password'); // Exclude sensitive fields like password
-
+        const user = await User.findById(req.user.id).select('-password');
         if (!user) {
-            console.error("User not found for user:", userId);
             return res.status(404).json({ error: 'User not found' });
         }
-
-        console.log("User found:", user);
         res.status(200).json(user);
     } catch (err) {
-        console.error(err);
-        console.error("Error in /api/users/me route:", err.message);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-router.get('/appointments/my-appointments', async (req, res) => {
+router.get('/appointments/my-appointments', authMiddleware(),async (req, res) => {
     try {
         const userId = req.session.user._id;
         const appointments = await Appointment.find({ patientId: userId });

@@ -16,7 +16,6 @@ import {
 import { FaSun, FaMoon } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { clearUser } from "../../features/userSlice";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const AdminNavbar = () => {
@@ -26,14 +25,10 @@ const AdminNavbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const onLogout = async () => {
-    try {
-      await axios.post("http://localhost:5000/auth/logout", {}, { withCredentials: true });
-      dispatch(clearUser()); // Clear user from Redux
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+  const onLogout = () => {
+    localStorage.removeItem("token"); // Remove JWT
+    dispatch(clearUser()); // Clear Redux state
+    navigate("/login");
   };
 
   return (
@@ -46,23 +41,21 @@ const AdminNavbar = () => {
       justify="space-between"
       align="center"
     >
-      {/* Left Side - Navigation Links */}
       <HStack spacing="8">
-        <Box as="a" href="/dashboard/admin" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
+        <Box as="a" href="/dashboard/admin" padding="2" borderRadius="md">
           Dashboard
         </Box>
-        <Box as="a" href="/dashboard/admin/doctors" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
+        <Box as="a" href="/dashboard/admin/doctors" padding="2" borderRadius="md">
           Doctors
         </Box>
-        <Box as="a" href="/dashboard/admin/patients" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
+        <Box as="a" href="/dashboard/admin/patients" padding="2" borderRadius="md">
           Patients
         </Box>
-        <Box as="a" href="/dashboard/admin/appointments" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
-          Appointments
+        <Box as="a" href="/dashboard/admin/invoices" padding="2" borderRadius="md">
+          Invoices
         </Box>
       </HStack>
 
-      {/* Right Side - User Profile and Theme Toggle */}
       <HStack spacing="6" align="center">
         <IconButton
           aria-label="Toggle theme"
@@ -70,15 +63,12 @@ const AdminNavbar = () => {
           onClick={toggleColorMode}
           isRound
           size="md"
-          bg="transparent"
-          color={colorMode === "light" ? "orange.400" : "yellow.400"}
-          _hover={{ bg: "transparent" }}
         />
 
         {user ? (
           <Menu>
-            <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-              <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
+            <MenuButton as={Button} rounded="full" variant="link">
+              <Avatar size="md" src={user?.profilePicture} />
             </MenuButton>
             <MenuList>
               <MenuItem as="a" href="/dashboard/admin/edit" color={textColor}>

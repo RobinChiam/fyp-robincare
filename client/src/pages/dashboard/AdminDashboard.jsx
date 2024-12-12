@@ -10,6 +10,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "../../components/layout/AdminNavbar";
+import axiosInstance from '../../utils/axiosInstance';
+
 
 const AdminDashboard = () => {
   const [invoiceStats, setInvoiceStats] = useState({
@@ -24,49 +26,31 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const userResponse = await axios.get("http://localhost:5000/api/users/me", {
-          withCredentials: true,
-        });
-        setUser(userResponse.data);
-
-        const invoicesResponse = await axios.get(
-          "http://localhost:5000/billing/summary",
-          { withCredentials: true }
-        );
-
-        setInvoiceStats({
-          totalInvoices: invoicesResponse.data.totalInvoices,
-          unpaidInvoices: invoicesResponse.data.unpaidInvoices,
-          paidInvoices: invoicesResponse.data.paidInvoices,
-        });
+          const userResponse = await axiosInstance.get('/api/users/me');
+          setUser(userResponse.data);
+  
+          const invoicesResponse = await axiosInstance.get('/billing/summary');
+          setInvoiceStats({
+              totalInvoices: invoicesResponse.data.totalInvoices,
+              unpaidInvoices: invoicesResponse.data.unpaidInvoices,
+              paidInvoices: invoicesResponse.data.paidInvoices,
+          });
       } catch (error) {
-        console.error("Error fetching admin data:", error.message);
-        navigate("/login");
+          console.error('Error fetching admin data:', error.message);
+          navigate('/login');
       } finally {
-        setLoading(false);
+          setLoading(false);
       }
-    };
+  };
 
     fetchAdminData();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        "http://localhost:5000/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
-    } catch (error) {
-      console.error("Error during logout:", error.message);
-    }
-  };
 
   return (
     <Box>
       {/* Navbar */}
-      <AdminNavbar user={user} onLogout={handleLogout} />
+      <AdminNavbar user={user}  />
 
       {/* Main Content */}
       <Box py="10" px="6">

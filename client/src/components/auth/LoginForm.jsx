@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 import {
   Box,
   Button,
@@ -34,38 +34,38 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        'http://localhost:5000/auth/login',
-        credentials,
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.post('/auth/login', credentials);
+      const { token, user } = response.data;
 
-      const { user } = response.data;
-      dispatch(setUser(user)); // Save user to Redux
-      toast({
-        title: 'Login successful.',
-        status: 'success',
-        isClosable: true,
-      });
+        // Save JWT to localStorage
+        localStorage.setItem('token', token);
 
-      // Redirect based on role
-      if (user.role === 'patient') {
-        navigate('/dashboard/patient');
-      } else if (user.role === 'doctor') {
-        navigate('/dashboard/doctor');
-      } else if (user.role === 'admin') {
-        navigate('/dashboard/admin');
-      }
+        // Save user details to Redux
+        dispatch(setUser(user));
+
+        toast({
+            title: 'Login successful.',
+            status: 'success',
+            isClosable: true,
+        });
+        // Redirect based on role
+        if (user.role === 'patient') {
+            navigate('/dashboard/patient');
+        } else if (user.role === 'doctor') {
+            navigate('/dashboard/doctor');
+        } else if (user.role === 'admin') {
+            navigate('/dashboard/admin');
+        }
     } catch (err) {
-      console.error('Login error:', err.response?.data || err.message);
-      toast({
-        title: 'Login failed.',
-        description: err.response?.data?.message || 'Invalid credentials or network error.',
-        status: 'error',
-        isClosable: true,
-      });
+        console.error('Login error:', err.response?.data || err.message);
+        toast({
+            title: 'Login failed.',
+            description: err.response?.data?.message || 'Invalid credentials or network error.',
+            status: 'error',
+            isClosable: true,
+        });
     }
-  };
+};
 
   return (
     <Box px={8} py={12} maxW="lg" mx="auto">
@@ -99,9 +99,9 @@ const LoginForm = () => {
         </FormControl>
         <Button colorScheme="blue" width="100%" onClick={handleLogin}>
           Login
-        </Button>
+      </Button>
         <HStack justify="space-between" width="100%">
-          <Button variant="link" colorScheme="blue" as="a" href="/reset-password">
+          <Button variant="link" colorScheme="blue" as="a" href="/forgot-password">
             Forgot Password?
           </Button>
           <Text fontSize="sm">

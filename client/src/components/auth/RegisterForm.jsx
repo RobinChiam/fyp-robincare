@@ -361,6 +361,13 @@ const RegisterForm = () => {
           </VStack>
         </>
       )}
+      <Text mt={6} textAlign="center">
+        Already have an account?{' '}
+        <Link href="/login" color="blue.500" fontWeight="bold">
+          Click Here
+        </Link>
+      </Text>
+
       <Link href="/" color="blue.500" mt={6} display="block" textAlign="center">
         Back to Home
       </Link>

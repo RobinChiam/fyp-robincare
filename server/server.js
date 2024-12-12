@@ -32,14 +32,9 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(sessionMiddleware); // Use session middleware
+//app.use(sessionMiddleware); // Use session middleware
 app.use(cookieParser());
 
-/* Make user Object available globally. */
-app.use((req, res, next) => {
-    res.locals.user = req.session.user || null; // If user is logged in, make user available globally
-    next();
-});
 
 /* Serve Static Files */
 app.use('/uploads',express.static(path.join(__dirname, './public/uploads/profile-picture')));

@@ -2,28 +2,28 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Heading,
-  Text,
-  Flex,
   VStack,
   Spinner,
+  Text,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Navbar from "../../components/layout/Navbar";
 
 const PatientDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const appointmentsResponse = await axios.get(
-          "http://localhost:5000/appointments/my-appointments",
-          { withCredentials: true }
-        );
-        setAppointments(appointmentsResponse.data.appointments || []);
+        const userResponse = await axiosInstance.get('/api/users/me');
+          setUser(userResponse.data);
+        const response = await axiosInstance.get("/appointments/my-appointments");
+        setAppointments(response.data.appointments || []);
       } catch (error) {
         console.error("Error fetching appointments:", error.message);
         navigate("/login");
@@ -35,46 +35,27 @@ const PatientDashboard = () => {
     fetchAppointments();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        "http://localhost:5000/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
-    } catch (error) {
-      console.error("Error during logout:", error.message);
-    }
-  };
-
   return (
     <Box>
-      {/* Navbar */}
-      <Navbar onLogout={handleLogout} />
-
-      {/* Main Content */}
+      <Navbar />
       <Box py="10" px="6">
-        <Heading mb="4">Welcome to Your Dashboard!</Heading>
-        <Text mb="6">Here is your personalized dashboard with upcoming appointments, medical records, and more.</Text>
-        <Box>
-          <Heading size="md" mb="4">Upcoming Appointments</Heading>
-          {loading ? (
-            <Spinner />
-          ) : appointments.length > 0 ? (
-            <VStack align="start" spacing="4">
-              {appointments.map((appt) => (
-                <Box key={appt.id} p="4" borderWidth="1px" borderRadius="md">
-                  <Text><strong>Date:</strong> {appt.date}</Text>
-                  <Text><strong>Time:</strong> {appt.time}</Text>
-                  <Text><strong>Doctor:</strong> {appt.doctorName}</Text>
+      <Heading mb="4">Welcome, {user?.name || "to Your Dashboard"}!</Heading>
+        {loading ? (
+          <Spinner size="xl" />
+        ) : (
+          <VStack spacing="4" align="start">
+            {appointments.length > 0 ? (
+              appointments.map((appt) => (
+                <Box key={appt.id}>
+                  <Text>Date: {appt.date}</Text>
+                  <Text>Doctor: {appt.doctorName}</Text>
                 </Box>
-              ))}
-            </VStack>
-          ) : (
-            <Text>No appointments found.</Text>
-          )}
-        </Box>
+              ))
+            ) : (
+              <Text>No Appointments Found</Text>
+            )}
+          </VStack>
+        )}
       </Box>
     </Box>
   );

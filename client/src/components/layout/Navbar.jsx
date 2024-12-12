@@ -16,30 +16,45 @@ import {
 import { FaSun, FaMoon } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "../../features/userSlice";
-import axios from "axios";
+import axiosInstance from '../../utils/axiosInstance';
+import { useNavigate } from "react-router-dom";
 
-const Navbar = ({ onLogout }) => {
+
+const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const textColor = useColorModeValue("black", "white");
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.userDetails);
+  const navigate = useNavigate();
 
   // Fetch user data on component mount
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const userResponse = await axios.get("http://localhost:5000/api/users/me", {
-          withCredentials: true,
-        });
-        dispatch(setUser(userResponse.data)); // Save user to Redux
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-        dispatch(clearUser()); // Clear user state on error
-      }
+        const token = localStorage.getItem('token');
+        if (!token) {
+            dispatch(clearUser());
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.get('/api/users/me');
+            dispatch(setUser(response.data));
+        } catch (error) {
+            console.error('Error fetching user:', error.message);
+            dispatch(clearUser());
+            localStorage.removeItem('token'); // Clear invalid token
+        }
     };
 
     fetchUser();
-  }, [dispatch]);
+}, [dispatch]);
+
+const onLogout = () => {
+  localStorage.removeItem('token'); // Remove JWT
+  dispatch(clearUser()); // Clear Redux state
+  navigate('/login');
+};
+
 
   return (
     <Flex

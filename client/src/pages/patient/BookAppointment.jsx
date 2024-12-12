@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
     Box, Select, Input, Button, VStack, Heading, Text
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axiosInstance from '../../utils/axiosInstance';
 import Navbar from '../../components/layout/Navbar';
 
 const BookAppointment = () => {
@@ -13,42 +14,24 @@ const BookAppointment = () => {
     const [date, setDate] = useState('');
     const [timeSlot, setTimeSlot] = useState('');
     const [message, setMessage] = useState('');
-    const [user, setUser] = useState(null); // State for authenticated user
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const authenticateUser = async () => {
-            try {
-                const userResponse = await axios.get("http://localhost:5000/api/users/me", {
-                    withCredentials: true,
-                });
-                setUser(userResponse.data);
+    // Retrieve the user from Redux
+    const user = useSelector((state) => state.user.userDetails);
 
-                const doctorsResponse = await axios.get("http://localhost:5000/doctor/list", {
-                    withCredentials: true,
-                });
-                setDoctors(doctorsResponse.data);
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const response = await axiosInstance.get('/doctor/list');
+                setDoctors(response.data);
             } catch (error) {
-                console.error("Authentication error:", error.message);
-                navigate("/login"); // Redirect to login page if not authenticated
+                console.error('Error fetching doctors:', error.message);
+                navigate('/login'); // Redirect to login if unauthorized
             }
         };
 
-        authenticateUser();
+        fetchDoctors();
     }, [navigate]);
-
-    const handleLogout = async () => {
-        try {
-            await axios.post(
-                "http://localhost:5000/auth/logout",
-                {},
-                { withCredentials: true }
-            );
-            navigate("/login");
-        } catch (error) {
-            console.error("Error during logout:", error.message);
-        }
-    };
 
     const generateTimeSlots = (startTime, endTime) => {
         const slots = [];
@@ -81,16 +64,22 @@ const BookAppointment = () => {
     };
 
     const handleSubmit = async () => {
+        if (!user) {
+            navigate('/login'); // Redirect to login if user is not authenticated
+            return;
+        }
+
         try {
-            const response = await axios.post('http://localhost:5000/appointments/create', {
-                patientId: user._id,
+            const response = await axiosInstance.post('/appointments/create', {
+                patientId: user.id, // Use user ID from Redux
                 doctorId: selectedDoctor,
                 date,
                 timeSlot
-            }, { withCredentials: true });
+            });
 
             setMessage(response.data.message);
         } catch (error) {
+            console.error('Error booking appointment:', error.response?.data || error.message);
             setMessage(error.response?.data?.message || 'Error booking appointment');
         }
     };
@@ -98,7 +87,7 @@ const BookAppointment = () => {
     return (
         <Box>
             {/* Navbar */}
-            {user && <Navbar user={user} onLogout={handleLogout} />}
+            <Navbar />
 
             <Box p={6} maxWidth="500px" mx="auto">
                 <Heading as="h1" size="lg" mb={4}>Book Appointment</Heading>
@@ -127,7 +116,7 @@ const BookAppointment = () => {
                         ))}
                     </Select>
                     <Button colorScheme="blue" onClick={handleSubmit}>Book Appointment</Button>
-                    {message && <Text color="green.500">{message}</Text>}
+                    {message && <Text color={message.startsWith('Error') ? 'red.500' : 'green.500'}>{message}</Text>}
                 </VStack>
             </Box>
         </Box>

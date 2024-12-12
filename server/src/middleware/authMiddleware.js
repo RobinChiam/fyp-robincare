@@ -4,11 +4,13 @@ const authMiddleware = (roles = []) => {
   return (req, res, next) => {
     const authHeader = req.header('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log("Invalid authorization header format");
     return res.status(401).json({ error: 'Invalid authorization header format' });
     }
     const token = authHeader.split(' ')[1];
 
     if (!token) {
+      console.log("Authorization Token missing");
       return res.status(401).json({ error: 'Authorization token missing' });
     }
 
@@ -19,6 +21,7 @@ const authMiddleware = (roles = []) => {
 
       next();
     } catch (err) {
+      console.log("Invalid or expired token");
       res.status(401).json({ error: 'Invalid or expired token' });
     }
   };
