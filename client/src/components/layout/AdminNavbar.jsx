@@ -14,10 +14,27 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FaSun, FaMoon } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
+import { clearUser } from "../../features/userSlice";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const AdminNavbar = ({ user, onLogout }) => {
+const AdminNavbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const textColor = useColorModeValue("black", "white");
+  const user = useSelector((state) => state.user.userDetails);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const onLogout = async () => {
+    try {
+      await axios.post("http://localhost:5000/auth/logout", {}, { withCredentials: true });
+      dispatch(clearUser()); // Clear user from Redux
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <Flex
@@ -31,47 +48,22 @@ const AdminNavbar = ({ user, onLogout }) => {
     >
       {/* Left Side - Navigation Links */}
       <HStack spacing="8">
-        <Box
-          as="a"
-          href="/dashboard/admin"
-          _hover={{ backgroundColor: "blue.600" }}
-          padding="2"
-          borderRadius="md"
-        >
+        <Box as="a" href="/dashboard/admin" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
           Dashboard
         </Box>
-        <Box
-          as="a"
-          href="/dashboard/admin/doctors"
-          _hover={{ backgroundColor: "blue.600" }}
-          padding="2"
-          borderRadius="md"
-        >
+        <Box as="a" href="/dashboard/admin/doctors" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
           Doctors
         </Box>
-        <Box
-          as="a"
-          href="/dashboard/admin/patients"
-          _hover={{ backgroundColor: "blue.600" }}
-          padding="2"
-          borderRadius="md"
-        >
+        <Box as="a" href="/dashboard/admin/patients" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
           Patients
         </Box>
-        <Box
-          as="a"
-          href="/dashboard/admin/appointments"
-          _hover={{ backgroundColor: "blue.600" }}
-          padding="2"
-          borderRadius="md"
-        >
+        <Box as="a" href="/dashboard/admin/appointments" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
           Appointments
         </Box>
       </HStack>
 
       {/* Right Side - User Profile and Theme Toggle */}
       <HStack spacing="6" align="center">
-        {/* Theme Toggle IconButton */}
         <IconButton
           aria-label="Toggle theme"
           icon={colorMode === "light" ? <FaSun /> : <FaMoon />}
@@ -83,20 +75,25 @@ const AdminNavbar = ({ user, onLogout }) => {
           _hover={{ bg: "transparent" }}
         />
 
-        {/* User Profile Dropdown */}
-        <Menu>
-          <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-            <Avatar size="md" src={'http://localhost:5000' + user?.profilePicture} />
-          </MenuButton>
-          <MenuList>
-            <MenuItem as="a" href="/dashboard/admin/edit" color={textColor}>
-              Edit Account
-            </MenuItem>
-            <MenuItem onClick={onLogout} color={textColor}>
-              Logout
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        {user ? (
+          <Menu>
+            <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
+              <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
+            </MenuButton>
+            <MenuList>
+              <MenuItem as="a" href="/dashboard/admin/edit" color={textColor}>
+                Edit Account
+              </MenuItem>
+              <MenuItem onClick={onLogout} color={textColor}>
+                Logout
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
+          <Button as="a" href="/login" colorScheme="blue">
+            Login
+          </Button>
+        )}
       </HStack>
     </Flex>
   );
