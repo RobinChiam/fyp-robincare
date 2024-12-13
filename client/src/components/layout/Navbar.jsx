@@ -28,25 +28,25 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   // Fetch user data on component mount
-  useEffect(() => {
-    const fetchUser = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            dispatch(clearUser());
-            return;
-        }
+useEffect(() => {
+  const fetchUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      dispatch(clearUser());
+      return;
+    }
 
-        try {
-            const response = await axiosInstance.get('/api/users/me');
-            dispatch(setUser(response.data));
-        } catch (error) {
-            console.error('Error fetching user:', error.message);
-            dispatch(clearUser());
-            localStorage.removeItem('token'); // Clear invalid token
-        }
-    };
+    try {
+      const response = await axiosInstance.get('/api/users/me'); // Fetch logged-in user
+      dispatch(setUser(response.data)); // Populate Redux state
+    } catch (error) {
+      console.error('Error fetching user:', error.message);
+      dispatch(clearUser());
+      localStorage.removeItem('token'); // Clear invalid token
+    }
+  };
 
-    fetchUser();
+  fetchUser();
 }, [dispatch]);
 
 const onLogout = () => {
@@ -86,6 +86,9 @@ const onLogout = () => {
         </Menu>
         <Box as="a" href="/dashboard/patient/records" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
           Health Records
+        </Box>
+        <Box as="a" href="/dashboard/patient/invoices" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
+        Invoices
         </Box>
       </HStack>
 

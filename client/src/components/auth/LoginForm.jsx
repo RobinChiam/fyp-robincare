@@ -36,36 +36,38 @@ const LoginForm = () => {
     try {
       const response = await axiosInstance.post('/auth/login', credentials);
       const { token, user } = response.data;
-
-        // Save JWT to localStorage
-        localStorage.setItem('token', token);
-
-        // Save user details to Redux
-        dispatch(setUser(user));
-
-        toast({
-            title: 'Login successful.',
-            status: 'success',
-            isClosable: true,
-        });
-        // Redirect based on role
-        if (user.role === 'patient') {
-            navigate('/dashboard/patient');
-        } else if (user.role === 'doctor') {
-            navigate('/dashboard/doctor');
-        } else if (user.role === 'admin') {
-            navigate('/dashboard/admin');
-        }
+  
+      // Save JWT to localStorage
+      localStorage.setItem('token', token);
+  
+      // Save user details to Redux, ensuring `_id` is set
+      dispatch(setUser({ ...user, _id: user._id || user.id }));
+  
+      toast({
+        title: 'Login successful.',
+        status: 'success',
+        isClosable: true,
+      });
+  
+      // Redirect based on role
+      if (user.role === 'patient') {
+        navigate('/dashboard/patient');
+      } else if (user.role === 'doctor') {
+        navigate('/dashboard/doctor');
+      } else if (user.role === 'admin') {
+        navigate('/dashboard/admin');
+      }
     } catch (err) {
-        console.error('Login error:', err.response?.data || err.message);
-        toast({
-            title: 'Login failed.',
-            description: err.response?.data?.message || 'Invalid credentials or network error.',
-            status: 'error',
-            isClosable: true,
-        });
+      console.error('Login error:', err.response?.data || err.message);
+      toast({
+        title: 'Login failed.',
+        description: err.response?.data?.message || 'Invalid credentials or network error.',
+        status: 'error',
+        isClosable: true,
+      });
     }
-};
+  };
+  
 
   return (
     <Box px={8} py={12} maxW="lg" mx="auto">

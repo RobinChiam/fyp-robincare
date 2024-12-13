@@ -23,6 +23,7 @@ import AdminInvoices from "../pages/admin/AdminInvoices";
 import AdminPatients from "../pages/admin/AdminPatients";
 import BlogListPage from "../pages/blog/BlogListPage"; 
 import BlogDetailPage from "../pages/blog/BlogDetailPage"; 
+import PatientInvoices from "../pages/patient/PatientInvoices";
 
 const AppRoutes = () => (
     <Routes>
@@ -102,6 +103,14 @@ const AppRoutes = () => (
       element={
           <ProtectedRoute allowedRoles={['patient']}>
           <BookAppointment />
+          </ProtectedRoute>
+        } 
+      />
+            <Route 
+      path ="/dashboard/patient/invoices" 
+      element={
+          <ProtectedRoute allowedRoles={['patient']}>
+          <PatientInvoices />
           </ProtectedRoute>
         } 
       />

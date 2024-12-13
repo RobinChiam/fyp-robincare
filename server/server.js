@@ -38,6 +38,8 @@ app.use(cookieParser());
 
 /* Serve Static Files */
 app.use('/uploads',express.static(path.join(__dirname, './public/uploads/profile-picture')));
+app.use('/public',express.static(path.join(__dirname, './public/uploads/assets/')));
+
 // Serve static files from the uploads directory
 // app.use('/uploads', express.static(path.join(__dirname, './src/public/uploads')));
 

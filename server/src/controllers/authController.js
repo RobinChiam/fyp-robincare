@@ -1,32 +1,24 @@
 const User = require('../models/user-model');
 const Verification = require('../models/verification-model');
-const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const {resetPasswordInfo} = require('../config/mailer');
-const Patient = require('../models/patient-model');
 require('dotenv').config();
 
 const loginHandler = async (req, res) => {
   const { identifier, password } = req.body;
   try {
-      const user = await User.findOne({ $or: [{ email: identifier }, { icNumber: identifier }] });
-      const isMatch = await user.comparePassword(password, user.password);
-      if (!user || !isMatch) {
-          return res.status(401).json({ error: 'Invalid credentials' });
-      }
+    const user = await User.findOne({ $or: [{ email: identifier }, { icNumber: identifier }] });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-      // Generate a JWT
-      const token = jwt.sign(
-          { id: user._id, role: user.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
-      );
-      
-      res.status(200).json({ message: 'Login successful', token, user });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Ensure `_id` is part of the response
+    res.status(200).json({ message: 'Login successful', token, user: { ...user.toObject(), _id: user._id } });
   } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

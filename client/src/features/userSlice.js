@@ -7,7 +7,13 @@ const userSlice = createSlice({
   },
   reducers: {
     setUser: (state, action) => {
-      state.userDetails = action.payload;
+      const payload = action.payload;
+
+      // Ensure `_id` is always present (map `id` to `_id` if necessary)
+      state.userDetails = {
+        ...payload,
+        _id: payload._id || payload.id, // Map `id` to `_id` if `_id` is missing
+      };
     },
     clearUser: (state) => {
       state.userDetails = null;

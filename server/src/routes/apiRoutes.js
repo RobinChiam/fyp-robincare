@@ -8,6 +8,7 @@ const upload = require('../config/upload');
 const Doctor = require('../models/doctor-model'); // Adjust the path as per your project structure
 const Patient = require('../models/patient-model');
 const authMiddleware = require('../middleware/authMiddleware');
+const {createUser} = require('../controllers/userController')
 
 
 router.get('/users/me', authMiddleware(), async (req, res) => {
@@ -91,36 +92,7 @@ router.post('/profilePic', upload.single('profilePicture'), async (req, res) => 
     }
   });
 
-  router.post('/create-user', async (req, res) => {
-    try {
-        const { icNumber, email, password, role, name, dob, gender, phone, profilePicture } = req.body;
-
-        // Check for existing user by email or IC number
-        const existingUser = await User.findOne({ $or: [{ email }, { icNumber }] });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User with the provided email or IC number already exists' });
-        }
-
-        // Create the User entry
-        const newUser = new User({
-            icNumber,
-            email,
-            password, // Ideally, hash the password before saving it (use bcrypt or another library)
-            role,
-            name,
-            dob,
-            gender,
-            phone,
-            profilePicture
-        });
-
-        const savedUser = await newUser.save();
-        res.status(201).json({ message: 'User created successfully', user: savedUser });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred', error: error.message });
-    }
-});
+  router.post('/create-user', authMiddleware(['admin', 'doctor']), createUser);
 
 
   router.post('/create-doctor', async (req, res) => {
