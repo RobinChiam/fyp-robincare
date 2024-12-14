@@ -8,10 +8,15 @@ const DoctorDashboard = () => {
   const [missedAppointmentsCount, setMissedAppointmentsCount] = useState(0);
   const [totalAppointmentsCount, setTotalAppointmentsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
+          const userResponse = await axiosInstance.get('/api/users/me');
+          setUser(userResponse.data);
+
         const response = await axiosInstance.get("/appointments/doctor-appointments");
         const {
           futureAppointments = [],
@@ -35,7 +40,7 @@ const DoctorDashboard = () => {
     <Box>
       <DoctorNavbar />
       <Box p={6}>
-        <Heading mb={4}>Appointments Dashboard</Heading>
+      <Heading mb="4">Welcome, Dr. {user?.name || "to Your Dashboard"}!</Heading>
         {loading ? (
           <Spinner />
         ) : (
