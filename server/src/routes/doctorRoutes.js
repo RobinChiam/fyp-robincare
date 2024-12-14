@@ -4,9 +4,11 @@ const { getProfile, updateProfile } = require('../controllers/patientController'
 const Doctor = require('../models/doctor-model');
 const User = require('../models/user-model');
 const authMiddleware = require('../middleware/authMiddleware');
+const upload = require('../config/upload');
 
 
-router.get('/profile', authMiddleware(), getProfile);
+
+router.get('/profile', authMiddleware(['doctor']), getProfile);
 router.post('/profile/update', authMiddleware(), updateProfile);
 router.get('/list', authMiddleware(), async (req, res) => {
     try {

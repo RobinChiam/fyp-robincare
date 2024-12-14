@@ -16,14 +16,14 @@ const authMiddleware = (roles = []) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
 
-      // Check role if specified
       if (roles.length && !roles.includes(decoded.role)) {
         return res.status(403).json({ error: 'Access forbidden: insufficient role permissions' });
       }
 
-      next();
+      next(); // Passes control to the next middleware or route handler
     } catch (err) {
-      res.status(401).json({ error: 'Invalid or expired token' });
+      console.error('JWT verification failed:', err.message);
+      return res.status(401).json({ error: 'Invalid or expired token' });
     }
   };
 };

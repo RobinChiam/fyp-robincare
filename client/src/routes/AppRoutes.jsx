@@ -24,6 +24,10 @@ import AdminPatients from "../pages/admin/AdminPatients";
 import BlogListPage from "../pages/blog/BlogListPage"; 
 import BlogDetailPage from "../pages/blog/BlogDetailPage"; 
 import PatientInvoices from "../pages/patient/PatientInvoices";
+import EditPatientAccount from "../pages/patient/EditPatientAccount";
+import EditAdminAccount from "../pages/admin/EditAdminAccount";
+import EditDoctorAccount from "../pages/doctor/EditDoctorAccount";
+
 
 const AppRoutes = () => (
     <Routes>
@@ -43,6 +47,14 @@ const AppRoutes = () => (
         }
       />
       <Route
+        path="/dashboard/patient/edit"
+        element={
+          <ProtectedRoute allowedRoles={['patient']}>
+            <EditPatientAccount />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/dashboard/doctor"
         element={
           <ProtectedRoute allowedRoles={['doctor']}>
@@ -50,6 +62,14 @@ const AppRoutes = () => (
           </ProtectedRoute>
         }
       />
+      {<Route
+        path="/dashboard/doctor/edit"
+        element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <EditDoctorAccount />
+          </ProtectedRoute>
+        }
+      /> }
       <Route
         path="/dashboard/doctor/chats"
         element={
@@ -74,6 +94,14 @@ const AppRoutes = () => (
           </ProtectedRoute>
         }
       />
+      { <Route
+        path="/dashboard/admin/edit"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <EditAdminAccount />
+          </ProtectedRoute>
+        }
+      /> }
       <Route
         path="/dashboard/admin/doctors"
         element={

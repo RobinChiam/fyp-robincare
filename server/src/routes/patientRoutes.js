@@ -4,10 +4,11 @@ const { getProfile, updateProfile } = require('../controllers/patientController'
 const authMiddleware = require('../middleware/authMiddleware');
 const Patient = require('../models/patient-model')
 const mongoose = require('mongoose');
+const upload = require('../config/upload');
 
 
-router.get('/profile', authMiddleware(), getProfile);
-router.post('/profile/update', authMiddleware(), updateProfile);
+router.get('/profile', authMiddleware('patient', 'doctor', 'admin'), getProfile);
+router.post('/profile/update', authMiddleware('patient', 'admin'), upload.single('profilePicture'), updateProfile);
 router.get('/list', authMiddleware(['admin']), async (req, res) => {
     try {
       const patients = await Patient.find().select('name email phone');

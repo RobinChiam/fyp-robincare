@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const {resetPasswordInfo} = require('../config/mailer');
 require('dotenv').config();
+const Patient = require('../models/patient-model');
 
 const loginHandler = async (req, res) => {
   const { identifier, password } = req.body;
@@ -42,15 +43,22 @@ const registerHandler = async (req, res) => {
     }
 
     // Create user in User collection
-    await User.create({
+    const newUser = await User.create({
       icNumber: verification.icOrPassport,
       name: verification.fullName,
       email: verification.email,
       role: 'patient',
       dob: verification.dob,
-      phone: verification.phoneNumber,
+      phone: verification.phone,
       gender: verification.gender,
       password: verification.password,
+    });
+
+     // Create corresponding Patient record
+     await Patient.create({
+      user: newUser._id,
+      address: '', // Default empty address
+      medicalHistory: [], // Default empty medical history
     });
 
     // Delete verification record

@@ -44,7 +44,7 @@ const registerEmail = ([
       fullName,
       email,
       dob,
-      phoneNumber,
+      phone,
       gender,
       password,
       pin,

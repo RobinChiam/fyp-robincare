@@ -1,6 +1,8 @@
 /* ============== Schema for User Database Object ================ */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const Doctor = require('./doctor-model');
+const Patient = require('./patient-model');
 
 const userSchema = new mongoose.Schema({
     icNumber: { type: String, unique: true, required: true }, // Malaysian IC or Passport
@@ -33,6 +35,24 @@ userSchema.pre('save', async function (next) {
   }
     next();
 });
+
+// Pre-remove hook to delete corresponding Patient or Doctor record
+userSchema.pre('remove', async function (next) {
+  try {
+    if (this.role === 'doctor') {
+      // Delete associated Doctor record
+      await Doctor.findOneAndDelete({ user: this._id });
+    } else if (this.role === 'patient') {
+      // Delete associated Patient record
+      await Patient.findOneAndDelete({ user: this._id });
+    }
+    next();
+  } catch (error) {
+    console.error('Error during user removal:', error);
+    next(error);
+  }
+});
+
 
 
 module.exports = mongoose.model('User', userSchema);

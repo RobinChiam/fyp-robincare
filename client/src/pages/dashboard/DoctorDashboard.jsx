@@ -1,53 +1,61 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  Flex,
-  VStack,
-  Spinner,
-} from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosInstance";
+import { Box, Heading, VStack, Text, Spinner, Divider } from "@chakra-ui/react";
 import DoctorNavbar from "../../components/layout/DoctorNavbar";
+import axiosInstance from "../../utils/axiosInstance";
 
 const DoctorDashboard = () => {
-  const [stats, setStats] = useState(null);
+  const [futureAppointments, setFutureAppointments] = useState([]);
+  const [missedAppointmentsCount, setMissedAppointmentsCount] = useState(0);
+  const [totalAppointmentsCount, setTotalAppointmentsCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAppointments = async () => {
       try {
-        const userResponse = await axiosInstance.get('/api/users/me');
-          setUser(userResponse.data);
-        const response = await axiosInstance.get("/appointments/doctor-today");
-        setStats(response.data);
+        const response = await axiosInstance.get("/appointments/doctor-appointments");
+        const {
+          futureAppointments = [],
+          missedAppointmentsCount = 0,
+          totalAppointmentsCount = 0,
+        } = response.data;
+
+        setFutureAppointments(futureAppointments);
+        setMissedAppointmentsCount(missedAppointmentsCount);
+        setTotalAppointmentsCount(totalAppointmentsCount);
       } catch (error) {
-        console.error("Error fetching stats:", error.message);
-        navigate("/login");
+        console.error("Error fetching appointments:", error.message);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchStats();
-  }, [navigate]);
+    fetchAppointments();
+  }, []);
 
   return (
     <Box>
       <DoctorNavbar />
-      <Box py="10" px="6">
-      <Heading mb="4">Welcome, Dr. {user?.name || "to Your Dashboard"}!</Heading>
-      {loading ? (
-          <Spinner size="xl" />
+      <Box p={6}>
+        <Heading mb={4}>Appointments Dashboard</Heading>
+        {loading ? (
+          <Spinner />
         ) : (
-          <VStack spacing="4" align="start">
-            <Text>Total Appointments Today: {stats.totalAppointments}</Text>
-            <Text>Pending Appointments: {stats.pendingAppointments}</Text>
-            <Text>Completed Appointments: {stats.completedAppointments}</Text>
+          <VStack spacing={4} align="stretch">
+            <Text fontWeight="bold">Total Appointments: {totalAppointmentsCount}</Text>
+            <Text fontWeight="bold">Missed Appointments: {missedAppointmentsCount}</Text>
+            <Divider />
+            <Heading size="md" mt="4">Upcoming Appointments</Heading>
+            {futureAppointments.length > 0 ? (
+              futureAppointments.map((appointment) => (
+                <Box key={appointment._id} p={4} borderWidth={1} borderRadius="md">
+                  <Text><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</Text>
+                  <Text><strong>Time:</strong> {appointment.timeSlot}</Text>
+                  <Text><strong>Patient:</strong> {appointment.patientId?.name || "Unknown"}</Text>
+                  <Text><strong>Status:</strong> {appointment.status}</Text>
+                </Box>
+              ))
+            ) : (
+              <Text>No Upcoming Appointments</Text>
+            )}
           </VStack>
         )}
       </Box>
@@ -55,4 +63,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard;
+export default DoctorDashboard
