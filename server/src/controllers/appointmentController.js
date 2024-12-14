@@ -26,24 +26,33 @@ const createAppointment = async (req, res) => {
 };
 
 const getAppointments = async (req, res) => {
-  try {
-    console.log(req.user)
-    const { id, role } = req.user;
-    let appointments;
-
-    if (role === 'doctor') {
-      appointments = await Appointment.find({ doctorId: id });
-    } else if (role === 'patient') {
-      appointments = await Appointment.find({ patientId: id });
-    } else {
-      return res.status(403).json({ error: 'Unauthorized access' });
+    try {
+      const { id, role } = req.user;
+  
+      if (role !== 'patient') {
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+  
+      const now = new Date();
+      const appointments = await Appointment.find({ patientId: id })
+        .populate('doctorId', 'name') // Populate doctor's name
+        .sort({ date: 1 });
+  
+      const futureAppointments = appointments.filter(appt => 
+        appt.date >= now && ['pending', 'confirmed'].includes(appt.status));
+      const missedAppointments = appointments.filter(appt => 
+        appt.date < now && ['pending', 'confirmed'].includes(appt.status));
+  
+      res.status(200).json({
+        futureAppointments,
+        missedAppointmentsCount: missedAppointments.length,
+        totalAppointmentsCount: appointments.length,
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Server error' });
     }
-
-    res.status(200).json(appointments);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-};
+  };
+  
 
 const todayAppointments = async (req, res) => {
   try {

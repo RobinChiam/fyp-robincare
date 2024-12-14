@@ -16,11 +16,31 @@ const BookAppointment = () => {
   const [timeSlot, setTimeSlot] = useState('');
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
+  const [patientId, setPatientId] = useState(null); // Store patientId
   const navigate = useNavigate();
   const toast = useToast();
 
   const user = useSelector((state) => state.user.userDetails);
 
+  // Fetch patientId if the user is a patient
+  useEffect(() => {
+    const fetchPatientId = async () => {
+      try {
+        const response = await axiosInstance.get(`/patient/${user._id}`);
+        const patient = response.data;
+        setPatientId(patient._id); // Set the patientId from the fetched patient data
+      } catch (error) {
+        console.error('Error fetching patient ID:', error.message);
+        setMessage('Could not fetch patient details. Please try again later.');
+      }
+    };
+
+    if (user?.role === 'patient') {
+      fetchPatientId();
+    }
+  }, [user]);
+
+  // Fetch list of doctors
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -72,41 +92,41 @@ const BookAppointment = () => {
 
   const handleDateChange = async (selectedDate) => {
     setDate(selectedDate);
-  
+
     try {
       const doctor = doctors.find(doc => doc._id === selectedDoctor);
-      
+
       if (!doctor || !doctor.consultationHours) {
         setTimeSlots(['No consultation hours available for this doctor']);
         return;
       }
-  
+
       const { start, end } = doctor.consultationHours;
       const currentDate = new Date();
       const isToday = selectedDate === currentDate.toISOString().split('T')[0];
-      
+
       // Check if the current time is past the consultation end time for today
       if (isToday) {
         const consultationEndTime = new Date(`1970-01-01T${end}:00`);
         const currentTime = new Date(`1970-01-01T${currentDate.toTimeString().split(' ')[0]}`);
-  
+
         if (currentTime >= consultationEndTime) {
           setTimeSlots(['Doctor is unavailable for today, please select a different date']);
           return;
         }
       }
-  
+
       // Generate minimum time for today's date (2 hours after now if today)
       const minTime = isToday ? new Date(currentDate.getTime() + 2 * 60 * 60 * 1000) : null;
-  
+
       const response = await axiosInstance.post('/appointments/available-slots', {
         doctorId: selectedDoctor,
         date: selectedDate,
       });
-  
+
       const bookedSlots = response.data.bookedSlots || [];
       const availableSlots = generateTimeSlots(start, end, minTime).filter(slot => !bookedSlots.includes(slot));
-  
+
       if (availableSlots.length > 0) {
         setTimeSlots(availableSlots);
       } else {
@@ -117,26 +137,23 @@ const BookAppointment = () => {
       setMessage(error.response?.data?.error || 'Error fetching available slots');
     }
   };
-  
-  
-  
 
   const handleSubmit = async () => {
     try {
-        console.log('Request Payload:', {
-            patientId: user.id,
-            doctorId: selectedDoctor,
-            date,
-            timeSlot,
-            reason
-          });
-
-      const response = await axiosInstance.post('/appointments/create', {
-        patientId: user.id,
+      console.log('Request Payload:', {
+        patientId,
         doctorId: selectedDoctor,
         date,
         timeSlot,
-        reason
+        reason,
+      });
+
+      const response = await axiosInstance.post('/appointments/create', {
+        patientId, // Use the fetched patientId
+        doctorId: selectedDoctor,
+        date,
+        timeSlot,
+        reason,
       });
 
       toast({
@@ -144,7 +161,7 @@ const BookAppointment = () => {
         description: response.data.message,
         status: 'success',
         duration: 5000,
-        isClosable: true
+        isClosable: true,
       });
 
       navigate('/dashboard/patient');
