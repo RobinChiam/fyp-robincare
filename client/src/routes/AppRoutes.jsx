@@ -17,7 +17,8 @@ import ProtectedRoute from '../components/auth/protectedRoute';
 import AppointmentHistory from "../pages/patient/AppointmentHistory";
 import HealthRecords from "../pages/patient/HealthRecords";
 import AdminDoctors from "../pages/admin/AdminDoctors";
-import DoctorAppointments from "../pages/doctor/doctorAppointments";
+import DoctorWriteBlog from "../pages/doctor/DoctorWriteBlog";
+import DoctorViewBlog from "../pages/doctor/DoctorViewBlog";
 import DoctorChats from "../pages/doctor/DoctorChats";
 import AdminInvoices from "../pages/admin/AdminInvoices";
 import AdminPatients from "../pages/admin/AdminPatients";
@@ -78,12 +79,20 @@ const AppRoutes = () => (
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/dashboard/doctor/appointments"
+    <Route 
+        path="/dashboard/doctor/write-blog" 
         element={
           <ProtectedRoute allowedRoles={['doctor']}>
-            <DoctorAppointments />
-          </ProtectedRoute>
+        <DoctorWriteBlog />
+        </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/dashboard/doctor/view-blog" 
+        element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+        <DoctorViewBlog />
+        </ProtectedRoute>
         }
       />
       <Route

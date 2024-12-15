@@ -12,7 +12,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import axiosInstance from "../../utils/axiosInstance";
-import Navbar from "../../components/layout/Navbar";
+import DoctorNavbar from "../../components/layout/DoctorNavbar";
 
 const EditDoctorAccount = () => {
   const [profilePicture, setProfilePicture] = useState(null);
@@ -95,7 +95,7 @@ const EditDoctorAccount = () => {
 
   return (
     <Box>
-      <Navbar />
+      <DoctorNavbar />
       <Box py="10" px="6">
         <Heading mb="6">Edit Doctor Account</Heading>
         {loading ? (

@@ -20,6 +20,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const medicalRecordsRoutes = require('./src/routes/medicalRecordsRoutes');
 const insuranceClaimsRoutes = require('./src/routes/insuranceClaimsRoutes');
 const apiRoutes = require('./src/routes/apiRoutes');
+const blogRoutes = require('./src/routes/blogRoutes');
 
 /* Create Express app */
 const app = express();
@@ -47,7 +48,7 @@ app.use('/public',express.static(path.join(__dirname, './public/uploads/assets/'
 connectDB();
 
 /* Route Handlers*/
-app.use('/', publicRoutes);
+//app.use('/', publicRoutes);
 app.use('/auth', authRoutes);
 app.use('/appointments', appointmentRoutes);
 app.use('/billing', billingRoutes);
@@ -57,7 +58,7 @@ app.use('/admin', adminRoutes);
 app.use('/medical-records', medicalRecordsRoutes);
 app.use('/insurance-claims', insuranceClaimsRoutes);
 app.use('/api', apiRoutes);
-
+app.use('/blog', blogRoutes)
 /* Start server */
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Box, Image, VStack, Text, Spinner, Heading, Center } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import {
+  Box,
+  Text,
+  Image,
+  VStack,
+  Heading,
+  Spinner,
+  Flex,
+  LinkBox,
+  LinkOverlay,
+  Center,
+} from "@chakra-ui/react";
 import axiosInstance from "../../utils/axiosInstance";
+import { Link as RouterLink } from "react-router-dom";
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
@@ -10,7 +21,7 @@ const BlogList = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axiosInstance.get("/blog");
+        const response = await axiosInstance.get("/blog/list");
         setBlogs(response.data);
       } catch (error) {
         console.error("Error fetching blogs:", error.message);
@@ -22,47 +33,62 @@ const BlogList = () => {
     fetchBlogs();
   }, []);
 
+  if (loading) {
+    return (
+      <Box p={6} textAlign="center">
+      <Spinner size="xl" />
+      </Box>
+    );
+  }
+
   return (
-    <Box p={6}>
-      <Heading mb={4}>Blog Posts</Heading>
-      {loading ? (
-        <Spinner />
-      ) : blogs.length === 0 ? (
+    <Box p={6} maxW="800px" mx="auto">
+      <Heading mb={4}>All Blogs</Heading>
+      {blogs.length === 0 ? (
         <Center>
           <Text>No Blogs Found</Text>
         </Center>
       ) : (
         <VStack spacing={4} align="stretch">
           {blogs.map((blog) => (
-            <Box
+            <LinkBox
+              as="article"
               key={blog._id}
-              p={4}
-              borderWidth={1}
+              border="1px"
               borderRadius="md"
-              display="flex"
-              alignItems="center"
+              p="4"
+              _hover={{ boxShadow: "lg", cursor: "pointer" }}
             >
-              <Image
-                src={`http://localhost:5000/${blog.thumbnail}`}
-                alt="Blog Thumbnail"
-                boxSize="100px"
-                objectFit="cover"
-                borderRadius="md"
-              />
-              <Box ml={4}>
-                <Heading size="md">
-                  <Link to={`/blog/${blog._id}`}>{blog.title}</Link>
-                </Heading>
-                <Text>By Dr. {blog.doctor.user.name}</Text>
+              <Flex align="center" mb={2}>
                 <Image
-                  src={`http://localhost:5000${blog.doctor.user.profilePicture}`}
-                  alt="Author"
+                  src={`http://localhost:5000${blog?.thumbnail}`}
+                  alt="Blog Thumbnail"
+                  borderRadius="md"
+                  boxSize="100px"
+                  objectFit="cover"
+                  mr="4"
+                />
+                <LinkOverlay as={RouterLink} to={`/blog/${blog._id}`}>
+                  <Text fontSize="xl" fontWeight="bold">
+                    {blog.title}
+                  </Text>
+                </LinkOverlay>
+              </Flex>
+              <Flex align="center" mt={2}>
+                <Image
+                  src={`http://localhost:5000${blog?.doctor?.user?.profilePicture}`}
+                  alt="Author Profile"
                   boxSize="40px"
                   borderRadius="full"
-                  mt={2}
+                  objectFit="cover"
+                  mr="2"
                 />
-              </Box>
-            </Box>
+                <Text>By Dr. {blog?.doctor?.user?.name || "Unknown"}</Text>
+              </Flex>
+              <Text noOfLines={2} mt={2}>
+                {blog.content}
+              </Text>
+            </LinkBox>
           ))}
         </VStack>
       )}

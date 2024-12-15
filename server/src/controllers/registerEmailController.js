@@ -44,7 +44,7 @@ const registerEmail = ([
       fullName,
       email,
       dob,
-      phone,
+      phone: phoneNumber,
       gender,
       password,
       pin,
@@ -55,6 +55,7 @@ const registerEmail = ([
 
     res.status(200).json({ message: 'Verification email sent.' });
   } catch (err) {
+    console.log(err.message);
     res.status(500).json({ message: 'Registration failed.', error: err.message });
   }
 });

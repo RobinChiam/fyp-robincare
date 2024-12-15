@@ -31,6 +31,10 @@ const DoctorNavbar = () => {
     navigate("/login");
   };
 
+  const profilePictureUrl = user?.profilePicture
+    ? `http://localhost:5000${user.profilePicture}` // Prepend base URL if profilePicture is set
+    : "/default-avatar.png"; // Fallback to a default avatar
+
   return (
     <Flex
       as="nav"
@@ -42,12 +46,22 @@ const DoctorNavbar = () => {
       align="center"
     >
       <HStack spacing="8">
-        <Box as="a" href="/dashboard/doctor" padding="2" borderRadius="md">
+        <Box as="a" href="/dashboard/doctor" _hover={{ backgroundColor: "blue.600" }} padding="2" borderRadius="md">
           Dashboard
         </Box>
-        <Box as="a" href="/dashboard/doctor/appointments" padding="2" borderRadius="md">
-          Appointments
-        </Box>
+        <Menu>
+          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={"white"}>
+            Blogs
+          </MenuButton>
+          <MenuList>
+            <MenuItem as="a" href="/dashboard/doctor/write-blog" color={textColor}>
+              Write a Blog
+            </MenuItem>
+            <MenuItem as="a" href="/dashboard/doctor/view-blog" color={textColor}>
+              See your Blogs
+            </MenuItem>
+          </MenuList>
+        </Menu>
         <Box as="a" href="/dashboard/doctor/chats" padding="2" borderRadius="md">
           Chats
         </Box>
@@ -65,7 +79,7 @@ const DoctorNavbar = () => {
         {user ? (
           <Menu>
             <MenuButton as={Button} rounded="full" variant="link">
-              <Avatar size="md" src={user?.profilePicture} />
+              <Avatar size="md" src={profilePictureUrl} />
             </MenuButton>
             <MenuList>
               <MenuItem as="a" href="/dashboard/doctor/edit" color={textColor}>

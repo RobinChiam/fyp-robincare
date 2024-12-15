@@ -36,6 +36,28 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
+// Create or validate corresponding Patient record after saving a User
+// userSchema.post('save', async function (doc, next) {
+//   try {
+//       if (doc.role === 'patient') {
+//           // Check if a Patient record exists for this user
+//           const existingPatient = await Patient.findOne({ user: doc._id });
+//           if (!existingPatient) {
+//               // Create a new Patient record with default values
+//               await Patient.create({
+//                   user: doc._id,
+//                   address: '', // Default empty address
+//                   medicalHistory: [] // Default empty medical history
+//               });
+//           }
+//       }
+//       next();
+//   } catch (error) {
+//       console.error('Error during Patient creation:', error);
+//       next(error);
+//   }
+// });
+
 // Pre-remove hook to delete corresponding Patient or Doctor record
 userSchema.pre('remove', async function (next) {
   try {

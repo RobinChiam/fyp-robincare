@@ -43,7 +43,7 @@ const registerHandler = async (req, res) => {
     }
 
     // Create user in User collection
-    const newUser = await User.create({
+     await User.create({
       icNumber: verification.icOrPassport,
       name: verification.fullName,
       email: verification.email,
@@ -54,12 +54,7 @@ const registerHandler = async (req, res) => {
       password: verification.password,
     });
 
-     // Create corresponding Patient record
-     await Patient.create({
-      user: newUser._id,
-      address: '', // Default empty address
-      medicalHistory: [], // Default empty medical history
-    });
+    
 
     // Delete verification record
     await Verification.deleteOne({ email });
