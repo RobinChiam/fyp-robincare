@@ -46,32 +46,32 @@ const CompleteAppointment = () => {
       attachments: [...prevData.attachments, ...files],
     }));
   };
-
+  
   const handleSubmit = async () => {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("patientId", formData.patientId);
       formDataToSend.append("doctorId", formData.doctorId);
-      formDataToSend.append("appointmentId", formData.appointmentId); // Add appointmentId
+      formDataToSend.append("appointmentId", formData.appointmentId);
       formDataToSend.append("diagnosis", formData.diagnosis);
       formDataToSend.append("prescription", formData.prescription);
       formDataToSend.append("notes", formData.notes);
-
-      // Append file attachments if any
+  
+      // Append file attachments with the correct field name: 'files'
       formData.attachments.forEach((file) => {
-        formDataToSend.append("attachments", file);
+        formDataToSend.append("files", file); // Change 'attachments' to 'files'
       });
-
+  
       // Send request to create health record
       await axiosInstance.post("/medical-records/create", formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       // Update appointment status
       await axiosInstance.post(`/appointments/updateAppointment/${id}`, { status: "complete" });
-
+  
       alert("Appointment completed successfully!");
       navigate("/dashboard/doctor");
     } catch (error) {

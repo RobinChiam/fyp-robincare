@@ -15,46 +15,34 @@ import {
 } from "@chakra-ui/react";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, clearUser } from "../../features/userSlice";
-import axiosInstance from '../../utils/axiosInstance';
+import { clearUser } from "../../features/userSlice";
 import { useNavigate } from "react-router-dom";
-
 
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const textColor = useColorModeValue("black", "white");
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.userDetails);
+  const user = useSelector((state) => state.user.userDetails); // Use Redux state
   const navigate = useNavigate();
 
-  // Fetch user data on component mount
-useEffect(() => {
-  const fetchUser = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      dispatch(clearUser());
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.get('/api/users/me'); // Fetch logged-in user
-      dispatch(setUser(response.data)); // Populate Redux state
-    } catch (error) {
-      console.error('Error fetching user:', error.message);
-      dispatch(clearUser());
-      localStorage.removeItem('token'); // Clear invalid token
-    }
+  const onLogout = () => {
+    localStorage.removeItem("token"); // Remove JWT
+    dispatch(clearUser()); // Clear Redux state
+    navigate("/login");
   };
 
-  fetchUser();
-}, [dispatch]);
-
-const onLogout = () => {
-  localStorage.removeItem('token'); // Remove JWT
-  dispatch(clearUser()); // Clear Redux state
-  navigate('/login');
-};
-
+  const getDashboardLink = () => {
+    switch (user?.role) {
+      case 'patient':
+        return '/dashboard/patient';
+      case 'doctor':
+        return '/dashboard/doctor';
+      case 'admin':
+        return '/dashboard/admin';
+      default:
+        return '/';
+    }
+  };
 
   return (
     <Flex
@@ -66,13 +54,12 @@ const onLogout = () => {
       justify="space-between"
       align="center"
     >
-      {/* Navigation Links */}
       <HStack spacing="8">
         <Box as="a" href="/" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
           Home
         </Box>
         <Menu>
-          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={'white'}>
+          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={"white"}>
             Appointments
           </MenuButton>
           <MenuList>
@@ -88,11 +75,10 @@ const onLogout = () => {
           Health Records
         </Box>
         <Box as="a" href="/dashboard/patient/invoices" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
-        Invoices
+          Invoices
         </Box>
       </HStack>
 
-      {/* User Profile and Theme Toggle */}
       <HStack spacing="6" align="center">
         <IconButton
           aria-label="Toggle theme"
@@ -111,6 +97,9 @@ const onLogout = () => {
               <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
             </MenuButton>
             <MenuList>
+              <MenuItem as="a" href={getDashboardLink()} color="black">
+                Dashboard
+              </MenuItem>
               <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>
                 Edit Account
               </MenuItem>

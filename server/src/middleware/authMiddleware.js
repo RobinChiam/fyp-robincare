@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const authMiddleware = (roles = []) => {
   return (req, res, next) => {
+    console.log('authMiddleware triggered:', req.method, req.url);
     const authHeader = req.header('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Invalid authorization header format' });
@@ -20,7 +21,7 @@ const authMiddleware = (roles = []) => {
       if (roles.length && !roles.includes(decoded.role)) {
         return res.status(403).json({ error: 'Access forbidden: insufficient role permissions' });
       }
-
+      console.log(req.user);
       next(); // Passes control to the next middleware or route handler
     } catch (err) {
       console.error('JWT verification failed:', err.message);

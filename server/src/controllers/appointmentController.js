@@ -40,6 +40,8 @@ const getAllAppointments = async (req, res) => {
 };
 
 const getAppointments = async (req, res) => {
+  console.log('Request received for getAppointments');
+
   try {
     const { id, role } = req.user;
 
@@ -55,16 +57,18 @@ const getAppointments = async (req, res) => {
     }
 
     const patientId = patientRecord._id;
-    const appointments = await Appointment.find({ patientId })
-    .populate({
-      path: 'doctorId', // Populate the doctor reference
-      select: 'specialization user', // Include specialization and user fields
-      populate: { path: 'user', select: 'name email' }, // Populate the user field within doctorId
-    });
 
-    console.log(appointments);
+    // Fetch appointments and populate doctor details
+    const appointments = await Appointment.find({ patientId: patientId })
+      .populate({
+        path: 'doctorId',
+        select: 'specialization user',
+        populate: { path: 'user', select: 'name email' },
+      });
+
     res.status(200).json(appointments);
   } catch (err) {
+    console.error("Error fetching appointments:", err.message);
     res.status(500).json({ error: 'Server error' });
   }
 };

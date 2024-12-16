@@ -17,7 +17,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Routes
 router.post('/create', authMiddleware(['doctor', 'patient']), createAppointment);
-router.get('/', authMiddleware(['admin']), getAllAppointments);
+router.get('/history', authMiddleware(['patient']), getAppointments);
 router.get('/my-appointments', authMiddleware(['doctor', 'patient']), getAppointmentsForUser);
 router.get('/doctor-appointments', authMiddleware(['doctor']), getAppointmentsForDoctor);
 router.get('/:id', authMiddleware(['doctor', 'patient', 'admin']), getAppointmentById);
@@ -26,6 +26,7 @@ router.delete('/:id', authMiddleware(['admin']), deleteAppointment);
 router.post('/available-slots', authMiddleware(['doctor', 'patient']), availableSlots);
 router.get('/doctor-today', authMiddleware(['doctor']), todayAppointments);
 router.post('/updateAppointment/:id', authMiddleware(['doctor']), updateAppointmentStatus);
-router.get('/history', authMiddleware(['doctor', 'patient']), getAppointments);
+router.get('/', authMiddleware(['admin']), getAllAppointments);
+
 
 module.exports = router;

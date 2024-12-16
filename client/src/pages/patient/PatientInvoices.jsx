@@ -1,33 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Heading,
-  VStack,
-  Text,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
   Spinner,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
+  Text,
   Button,
-  Image,
-} from '@chakra-ui/react';
-import axiosInstance from '../../utils/axiosInstance';
-import Navbar from '../../components/layout/Navbar';
+} from "@chakra-ui/react";
+import Navbar from "../../components/layout/Navbar";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../utils/axiosInstance";
 
 const PatientInvoices = () => {
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const response = await axiosInstance.get('/billing/my-invoices');
+        const response = await axiosInstance.get("/billing/my-invoices");
         setInvoices(response.data);
       } catch (error) {
-        console.error('Error fetching invoices:', error.message);
+        console.error("Error fetching invoices:", error.message);
       } finally {
         setLoading(false);
       }
@@ -35,14 +35,6 @@ const PatientInvoices = () => {
 
     fetchInvoices();
   }, []);
-
-  const filteredInvoices = invoices.filter((invoice) =>
-    filter === 'all'
-      ? true
-      : filter === 'unpaid'
-      ? !invoice.isPaid
-      : invoice.isPaid
-  );
 
   return (
     <Box>
@@ -52,41 +44,36 @@ const PatientInvoices = () => {
         {loading ? (
           <Spinner />
         ) : invoices.length === 0 ? (
-          <Text>No Invoices Found</Text>
+          <Text>No invoices found.</Text>
         ) : (
-          <>
-            <Tabs onChange={(index) => setFilter(['all', 'unpaid', 'paid'][index])}>
-              <TabList>
-                <Tab>All</Tab>
-                <Tab>Unpaid</Tab>
-                <Tab>Paid</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <VStack spacing={4}>
-                    {filteredInvoices.map((invoice) => (
-                      <Box
-                        key={invoice._id}
-                        p={4}
-                        borderWidth={1}
-                        borderRadius="md"
-                        backgroundColor={invoice.isPaid ? 'green.100' : 'red.100'}
-                      >
-                        <Text><strong>Date:</strong> {new Date(invoice.date).toLocaleDateString()}</Text>
-                        <Text><strong>Amount:</strong> ${invoice.amount}</Text>
-                        <Text><strong>Status:</strong> {invoice.isPaid ? 'Paid' : 'Unpaid'}</Text>
-                        {!invoice.isPaid && (
-                          <Button colorScheme="blue" mt={2}>
-                            Pay Now
-                          </Button>
-                        )}
-                      </Box>
-                    ))}
-                  </VStack>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </>
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Date</Th>
+                <Th>Amount</Th>
+                <Th>Status</Th>
+                <Th>Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {invoices.map((invoice) => (
+                <Tr key={invoice._id}>
+                  <Td>{new Date(invoice.date).toLocaleDateString()}</Td>
+                  <Td>RM{invoice.amount.toFixed(2)}</Td>
+                  <Td>{invoice.isPaid ? "Paid" : "Unpaid"}</Td>
+                  <Td>
+                    <Button
+                      colorScheme="blue"
+                      size="sm"
+                      onClick={() => navigate(`/dashboard/patient/invoice/${invoice._id}`)}
+                    >
+                      Details
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
         )}
       </Box>
     </Box>

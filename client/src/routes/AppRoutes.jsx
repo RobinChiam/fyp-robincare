@@ -29,6 +29,9 @@ import EditPatientAccount from "../pages/patient/EditPatientAccount";
 import EditAdminAccount from "../pages/admin/EditAdminAccount";
 import EditDoctorAccount from "../pages/doctor/EditDoctorAccount";
 import CompleteAppointment from "../pages/doctor/CompleteAppointment";
+import AppointmentInfo from "../pages/patient/AppointmentInfo";
+import HealthRecordInfo from "../pages/patient/HealthRecordInfo"; 
+import InvoiceInfo from "../pages/patient/InvoiceInfo";
 
 const AppRoutes = () => (
     <Routes>
@@ -151,7 +154,31 @@ const AppRoutes = () => (
           </ProtectedRoute>
         } 
       />
-            <Route 
+      <Route 
+      path ="/dashboard/patient/appointment/:id" 
+      element={
+          <ProtectedRoute allowedRoles={['patient']}>
+          <AppointmentInfo />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+      path ="/dashboard/patient/invoice/:id" 
+      element={
+          <ProtectedRoute allowedRoles={['patient']}>
+          <InvoiceInfo />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+      path ="/dashboard/patient/health-record/:id" 
+      element={
+          <ProtectedRoute allowedRoles={['patient']}>
+          <HealthRecordInfo />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
       path ="/dashboard/patient/invoices" 
       element={
           <ProtectedRoute allowedRoles={['patient']}>
