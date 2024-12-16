@@ -60,7 +60,12 @@ const PatientDashboard = () => {
                 <Box key={appt._id} borderWidth="1px" borderRadius="md" p="4" width="100%">
                   <Text><strong>Date:</strong> {new Date(appt.date).toLocaleDateString()}</Text>
                   <Text><strong>Time:</strong> {appt.timeSlot}</Text>
-                  <Text><strong>Doctor:</strong> {appt.doctorId.name}</Text>
+                  <Text>
+                    <strong>Doctor:</strong> {appt.doctorId?.user?.name || "Unknown Doctor"}
+                  </Text>
+                  <Text>
+                    <strong>Specialization:</strong> {appt.doctorId?.specialization || "N/A"}
+                  </Text>
                   <Text><strong>Status:</strong> {appt.status}</Text>
                 </Box>
               ))

@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 
 const healthRecordSchema = new mongoose.Schema({
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Doctor who updated the record
+    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' }, // Doctor who updated the record
+    appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', required: true },
     diagnosis: { type: String, required: true },
     prescription: { type: String },
     visitDate: { type: Date, default: Date.now },

@@ -28,8 +28,13 @@ router.get('/list', authMiddleware(), async (req, res) => {
 
 router.get('/chats', authMiddleware(['doctor']), async (req, res) => {
     try {
-      const { id } = req.user;
-      const chats = await Chat.find({ doctorId: id }).populate('patientId', 'name');
+      const doctorRecord = await Doctor.findOne({ user: req.user.id });
+      if (!doctorRecord) {
+        return res.status(404).json({ error: 'Doctor record not found' });
+      }
+      const doctorId = doctorRecord._id;
+
+      const chats = await Chat.find({ doctorId }).populate('patientId', 'name');
       if (chats.length === 0) {
         return res.status(200).json([]);
       }

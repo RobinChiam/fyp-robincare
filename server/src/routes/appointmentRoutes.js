@@ -9,7 +9,9 @@ const {
   deleteAppointment,
   availableSlots,
   todayAppointments,
-  getAppointmentsForDoctor
+  getAppointmentsForDoctor,
+  updateAppointmentStatus,
+  getAppointments
 } = require('../controllers/appointmentController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -23,5 +25,7 @@ router.patch('/:id', authMiddleware(['admin']), updateAppointment);
 router.delete('/:id', authMiddleware(['admin']), deleteAppointment);
 router.post('/available-slots', authMiddleware(['doctor', 'patient']), availableSlots);
 router.get('/doctor-today', authMiddleware(['doctor']), todayAppointments);
+router.post('/updateAppointment/:id', authMiddleware(['doctor']), updateAppointmentStatus);
+router.get('/history', authMiddleware(['doctor', 'patient']), getAppointments);
 
 module.exports = router;

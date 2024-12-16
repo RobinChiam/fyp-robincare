@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { fetchInvoices, payInvoice, getInvoices } = require('../controllers/billingController');
+const { fetchInvoices, payInvoice, getInvoices, createInvoice } = require('../controllers/billingController');
 const Invoice = require('../models/invoice-model');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -33,5 +33,6 @@ router.get('/summary', authMiddleware(), async (req, res) => {
     }
   });
 router.get('/all-invoices', authMiddleware(['admin']), getInvoices);
+router.post('/create', authMiddleware(['doctor']), createInvoice);
 
 module.exports = router;

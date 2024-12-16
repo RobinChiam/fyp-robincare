@@ -28,7 +28,7 @@ import PatientInvoices from "../pages/patient/PatientInvoices";
 import EditPatientAccount from "../pages/patient/EditPatientAccount";
 import EditAdminAccount from "../pages/admin/EditAdminAccount";
 import EditDoctorAccount from "../pages/doctor/EditDoctorAccount";
-
+import CompleteAppointment from "../pages/doctor/CompleteAppointment";
 
 const AppRoutes = () => (
     <Routes>
@@ -76,6 +76,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoute allowedRoles={['doctor']}>
             <DoctorChats />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/doctor/complete-appointment/:id"
+        element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <CompleteAppointment />
           </ProtectedRoute>
         }
       />

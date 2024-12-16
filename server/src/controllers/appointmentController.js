@@ -1,6 +1,8 @@
 const Appointment = require('../models/appointments-model');
 const moment = require('moment');
 const mongoose = require('mongoose');
+const Patient = require('../models/patient-model');
+const Doctor = require('../models/doctor-model');
 
 // Create a new appointment
 const createAppointment = async (req, res) => {
@@ -37,34 +39,94 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
+const getAppointments = async (req, res) => {
+  try {
+    const { id, role } = req.user;
+
+    // Validate role
+    if (role !== 'patient') {
+      return res.status(403).json({ error: 'Unauthorized access' });
+    }
+
+    // Check if patient record exists
+    const patientRecord = await Patient.findOne({ user: id });
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient record not found' });
+    }
+
+    const patientId = patientRecord._id;
+    const appointments = await Appointment.find({ patientId })
+    .populate({
+      path: 'doctorId', // Populate the doctor reference
+      select: 'specialization user', // Include specialization and user fields
+      populate: { path: 'user', select: 'name email' }, // Populate the user field within doctorId
+    });
+
+    console.log(appointments);
+    res.status(200).json(appointments);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 // Fetch appointments for logged-in user
 const getAppointmentsForUser = async (req, res) => {
-    try {
-      const { id, role } = req.user;
-  
-      if (role !== 'patient') {
-        return res.status(403).json({ error: 'Unauthorized access' });
-      }
-  
-      const now = new Date();
-      const appointments = await Appointment.find({ patientId: id })
-        .populate('doctorId', 'name') // Populate doctor's name
-        .sort({ date: 1 });
-  
-      const futureAppointments = appointments.filter(appt => 
-        appt.date >= now && ['pending', 'confirmed'].includes(appt.status));
-      const missedAppointments = appointments.filter(appt => 
-        appt.date < now && ['pending', 'confirmed'].includes(appt.status));
-  
-      res.status(200).json({
-        futureAppointments,
-        missedAppointmentsCount: missedAppointments.length,
-        totalAppointmentsCount: appointments.length,
-      });
-    } catch (err) {
-      res.status(500).json({ error: 'Server error' });
+  try {
+    const { id, role } = req.user;
+
+    // Validate role
+    if (role !== 'patient') {
+      return res.status(403).json({ error: 'Unauthorized access' });
     }
+
+    // Check if patient record exists
+    const patientRecord = await Patient.findOne({ user: id });
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient record not found' });
+    }
+
+    const patientId = patientRecord._id;
+
+    const now = new Date();
+
+    // Fetch appointments and populate doctor details
+    const appointments = await Appointment.find({ patientId })
+      .populate({
+        path: 'doctorId', // Populate the doctor reference
+        select: 'specialization user', // Include specialization and user fields
+        populate: { path: 'user', select: 'name email' }, // Populate the user field within doctorId
+      })
+      .sort({ date: 1 });
+    if (!appointments || appointments.length === 0) {
+      return res.status(200).json({
+        futureAppointments: [],
+        missedAppointmentsCount: 0,
+        totalAppointmentsCount: 0,
+      });
+    }
+
+    // Filter future and missed appointments
+    const futureAppointments = appointments.filter((appt) =>
+      new Date(appt.date) >= now && ['pending', 'confirmed'].includes(appt.status)
+    );
+
+    const missedAppointments = appointments.filter((appt) =>
+      new Date(appt.date) < now && ['pending', 'confirmed'].includes(appt.status)
+    );
+
+    // Send response with full appointment objects
+    res.status(200).json({
+      futureAppointments,
+      missedAppointmentsCount: missedAppointments.length,
+      totalAppointmentsCount: appointments.length,
+    });
+  } catch (err) {
+    console.error('Error fetching appointments:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
 };
+
+
 
 const getAppointmentsForDoctor = async (req, res) => {
   try {
@@ -74,23 +136,50 @@ const getAppointmentsForDoctor = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
+    // Get the doctor record
+    const doctorRecord = await Doctor.findOne({ user: id });
+    if (!doctorRecord) {
+      return res.status(404).json({ error: 'Doctor record not found' });
+    }
+    const doctorId = doctorRecord._id;
+
     const now = new Date();
-    const appointments = await Appointment.find({ doctorId: id })
-      .populate('patientId', 'name') // Populate patient name
+
+    // Fetch appointments and populate patient details
+    const appointments = await Appointment.find({ doctorId })
+      .populate({
+        path: 'patientId',
+        populate: { path: 'user', select: 'name email' }, // Populate user's name and email from patient
+      })
       .sort({ date: 1 });
 
-    const futureAppointments = appointments.filter(appt => 
-      appt.date >= now && ['pending', 'confirmed'].includes(appt.status));
-    const missedAppointments = appointments.filter(appt => 
-      appt.date < now && ['pending', 'confirmed'].includes(appt.status));
+    if (!appointments || appointments.length === 0) {
+      return res.status(200).json({
+        futureAppointments: [],
+        missedAppointmentsCount: 0,
+        totalAppointmentsCount: 0,
+      });
+    }
 
+    // Filter future and missed appointments
+    const futureAppointments = appointments.filter((appt) =>
+      new Date(appt.date) >= now && ['pending', 'confirmed'].includes(appt.status)
+    );
+
+    const missedAppointments = appointments.filter((appt) =>
+      new Date(appt.date) < now && ['pending', 'confirmed'].includes(appt.status)
+    );
+
+    console.log(futureAppointments);
+    // Send response
     res.status(200).json({
       futureAppointments,
       missedAppointmentsCount: missedAppointments.length,
       totalAppointmentsCount: appointments.length,
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error fetching doctor appointments:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 };
 
@@ -99,7 +188,14 @@ const getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const appointment = await Appointment.findById(id).populate('doctorId patientId', 'name');
+    const appointment = await Appointment.findById(id)
+    .populate({
+      path: 'doctorId',
+      populate: { path: 'user', select: 'name email' },
+    }).populate({
+      path: 'patientId',
+      populate: { path: 'user', select: 'name email' },
+    });
     if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
@@ -124,6 +220,34 @@ const updateAppointment = async (req, res) => {
     res.status(200).json({ message: 'Appointment updated successfully.', appointment: updatedAppointment });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // Appointment ID from the request
+    const { status } = req.body; // New status from the request
+
+    if (!['confirmed', 'pending', 'rejected', 'complete'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true } // Return the updated document
+    );
+
+    if (!appointment) {
+      console.log('Appointment not found');
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    console.log('Appointment updated successfully');
+    res.status(200).json({ message: 'Appointment updated successfully', appointment });
+  } catch (err) {
+    console.error('Error updating appointment status:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 };
 
@@ -193,5 +317,7 @@ module.exports = {
   deleteAppointment,
   availableSlots,
   todayAppointments,
-  getAppointmentsForDoctor
+  getAppointmentsForDoctor,
+  updateAppointmentStatus,
+  getAppointments
 };

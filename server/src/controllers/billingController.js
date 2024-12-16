@@ -3,6 +3,12 @@ const Invoice = require('../models/invoice-model');
 const fetchInvoices = async (req, res) => {
   try {
     const { id } = req.user;
+    const patientRecord = await Patient.findOne({ user: req.user.id });
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient record not found' });
+    }
+    const patientId = patientRecord._id;
+
     const invoices = await Invoice.find({ patientId: id });
     res.status(200).json(invoices);
   } catch (err) {
@@ -39,4 +45,18 @@ const getInvoices = async (req, res) => {
       }
 }
 
-module.exports = { fetchInvoices, payInvoice, getInvoices };
+const createInvoice = async (req, res) => {
+  try {
+    const { patientId, doctorId, amount, description } = req.body;
+
+    const newInvoice = new Invoice({ patientId, doctorId, amount, description });
+    await newInvoice.save();
+
+    res.status(201).json({ message: "Invoice created successfully", invoice: newInvoice });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", details: err.message });
+  }
+};
+
+
+module.exports = { fetchInvoices, payInvoice, getInvoices, createInvoice };

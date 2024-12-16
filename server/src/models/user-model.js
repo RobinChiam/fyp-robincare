@@ -5,8 +5,8 @@ const Doctor = require('./doctor-model');
 const Patient = require('./patient-model');
 
 const userSchema = new mongoose.Schema({
-    icNumber: { type: String, unique: true, required: true }, // Malaysian IC or Passport
-    email: { type: String, unique: true, required: true },
+    icNumber: { type: String, sparse: true, required: true }, // Malaysian IC or Passport
+    email: { type: String, sparse: true, required: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'doctor', 'patient'], required: true },
     name: { type: String, required: true }, 

@@ -13,7 +13,7 @@ const {createUser} = require('../controllers/userController')
 
 router.get('/users/me', authMiddleware(), async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -81,7 +81,15 @@ router.post('/profilePic', upload.single('profilePicture'), async (req, res) => 
       }
   
       await user.save();
-  
+
+      const newUser = await User.findOne({ email }).select('_id');
+      const newPatient = new Patient({ 
+        user: newUser._id, 
+        address: '', 
+        medicalHistory: [] 
+      });
+      await newPatient.save();
+    
       res.status(200).json({
         message: 'Profile picture updated successfully!',
         filePath: user.profilePicture, // Return the saved profile picture path

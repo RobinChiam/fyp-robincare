@@ -26,8 +26,9 @@ const loginHandler = async (req, res) => {
 
 
 const registerHandler = async (req, res) => {
-  const { email, pin } = req.body;
 
+  const { email, pin} = req.body;
+ 
   console.log(`Received PIN: ${pin}`);
   try {
     const verification = await Verification.findOne({ email, pin });
@@ -43,7 +44,7 @@ const registerHandler = async (req, res) => {
     }
 
     // Create user in User collection
-     await User.create({
+     const newUser = await User.create({
       icNumber: verification.icOrPassport,
       name: verification.fullName,
       email: verification.email,
@@ -54,13 +55,13 @@ const registerHandler = async (req, res) => {
       password: verification.password,
     });
 
-    
-
     // Delete verification record
     await Verification.deleteOne({ email });
 
+    console.log(`User created: ${newUser}`);
+
     console.log('Account created successfully!');
-    res.status(200).json({ message: 'Account created successfully!' });
+    res.status(200).json({ message: 'Account created successfully!', userId: newUser._id });
   } catch (err) {
     console.error('Error during PIN verification:', err);
     res.status(500).json({ message: 'Verification failed.', error: err.message });
