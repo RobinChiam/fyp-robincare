@@ -31,6 +31,19 @@ const DoctorNavbar = () => {
     navigate("/login");
   };
 
+  const getDashboardLink = () => {
+    switch (user?.role) {
+      case "patient":
+        return "/dashboard/patient";
+      case "doctor":
+        return "/dashboard/doctor";
+      case "admin":
+        return "/dashboard/admin";
+      default:
+        return "/";
+    }
+  };
+
   const profilePictureUrl = user?.profilePicture
     ? `http://localhost:5000${user.profilePicture}` // Prepend base URL if profilePicture is set
     : "/default-avatar.png"; // Fallback to a default avatar
@@ -82,6 +95,9 @@ const DoctorNavbar = () => {
               <Avatar size="md" src={profilePictureUrl} />
             </MenuButton>
             <MenuList>
+            <MenuItem as="a" href={getDashboardLink()} color={textColor}>
+                  Dashboard
+                </MenuItem>
               <MenuItem as="a" href="/dashboard/doctor/edit" color={textColor}>
                 Edit Account
               </MenuItem>

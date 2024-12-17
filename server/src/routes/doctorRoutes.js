@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getProfile, updateProfile } = require('../controllers/patientController');
+const { getProfile, updateProfile, getDoctorById } = require('../controllers/doctorController');
 const Doctor = require('../models/doctor-model');
 const User = require('../models/user-model');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -48,6 +48,8 @@ router.get('/chats', authMiddleware(['doctor']), async (req, res) => {
       res.status(500).json({ message: 'Error fetching chats' });
     }
   });
+
+  router.get('/:id', authMiddleware(['admin']), getDoctorById);
 
 //router.post('/create-chats', authMiddleware(["doctor"]), async (req, res) => {
 

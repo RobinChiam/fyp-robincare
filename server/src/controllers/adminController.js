@@ -89,9 +89,6 @@ const updateProfile = async (req, res) => {
     // Update other fields
     if (req.body.password && req.body.password !== req.body.confirmPassword) {
       return res.status(400).json({ error: 'Passwords do not match' });
-    } else if (req.body.password) {
-      admin.password = await bcrypt.hash(req.body.password, 10);
-      hasChanges = true;
     }
 
     if (req.body.phone && req.body.phone !== admin.phone) {

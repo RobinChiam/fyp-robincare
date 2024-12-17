@@ -1,4 +1,5 @@
 const User = require('../models/user-model');
+const Doctor = require('../models/doctor-model');
 
 const getProfile = async (req, res) => {
   try {
@@ -42,10 +43,7 @@ const updateProfile = async (req, res) => {
     // Update other fields
     if (req.body.password && req.body.password !== req.body.confirmPassword) {
       return res.status(400).json({ error: 'Passwords do not match' });
-    } else if (req.body.password) {
-      doctor.password = await bcrypt.hash(req.body.password, 10);
-      hasChanges = true;
-    }
+    } 
 
     if (req.body.phone && req.body.phone !== doctor.phone) {
       doctor.phone = req.body.phone;
@@ -64,4 +62,19 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile };
+const getDoctorById = async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id)
+    .populate({
+      path: 'user',
+      select: 'name email phone profilePicture'
+    });
+    if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
+    return res.status(200).json(doctor);
+  } catch (err) {
+    console.error('Error fetching doctor details:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+module.exports = { getProfile, updateProfile, getDoctorById };

@@ -53,10 +53,7 @@ const getProfile = async (req, res) => {
       // Check and update fields only if they are different
       if (req.body.password && req.body.password !== req.body.confirmPassword) {
         return res.status(400).json({ error: 'Passwords do not match' });
-      } else if (req.body.password) {
-        patient.user.password = await bcrypt.hash(req.body.password, 10);
-        hasChanges = true;
-      }
+      } 
   
       if (req.body.address && req.body.address !== patient.address) {
         patient.address = req.body.address;
@@ -89,5 +86,37 @@ const getProfile = async (req, res) => {
       res.status(500).json({ error: 'Server error' });
     }
   };
+
+  const getPatientById = async (req, res) => {
+    try {
+      const patient = await Patient.findById( req.params.id )
+      .populate({
+        path: 'user',
+        select: 'name email phone profilePicture'
+      });
+      if (!patient) return res.status(404).json({ error: 'Patient not found' });
+      res.status(200).json(patient);
+    } catch (err) {
+      console.error('Error fetching patient details:', err.message);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  const getPatientId = async (req, res) => {
+    try {
+      const userId = req.user.id; // Extracted from JWT via authMiddleware
   
-module.exports = { getProfile, updateProfile };
+      // Find the patient document using the user's ID
+      const patient = await Patient.findOne({ user: userId });
+  
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient record not found' });
+      }
+  
+      res.status(200).json({ patientId: patient._id });
+    } catch (err) {
+      console.error('Error fetching patientId:', err.message);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  
+module.exports = { getProfile, updateProfile, getPatientById, getPatientId };

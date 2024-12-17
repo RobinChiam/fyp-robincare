@@ -3,12 +3,27 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Patient = require('../models/patient-model');
 const Doctor = require('../models/doctor-model');
+const { transporter } = require('../config/mailer');
 
 // Create a new appointment
 const createAppointment = async (req, res) => {
   try {
     const { patientId, doctorId, date, timeSlot } = req.body;
 
+    // Check if patient already has an appointment on the same date
+    const existingAppointment = await Appointment.findOne({
+      patientId,
+      date,
+      status: { $ne: 'rejected' }, // Exclude rejected appointments
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        message: 'You already have an appointment booked for this day. Please choose another date.',
+      });
+    }
+
+    // Check for conflicting time slot
     const conflictingAppointment = await Appointment.findOne({
       doctorId,
       date,
@@ -20,14 +35,53 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Time slot already booked.' });
     }
 
-    const newAppointment = new Appointment({ patientId, doctorId, date, timeSlot });
+    // Create new appointment
+    const newAppointment = new Appointment({
+      patientId,
+      doctorId,
+      date,
+      timeSlot,
+    });
+    
     await newAppointment.save();
+
+        // Fetch doctor and patient details
+        const doctor = await Doctor.findById(doctorId).populate('user', 'email name');
+        const patient = await Patient.findById(patientId).populate('user', 'name email');
+    
+        if (doctor && patient) {
+          const doctorEmail = doctor.user.email;
+          const doctorName = doctor.user.name;
+          const patientName = patient.user.name;
+    
+          // Send email notification to doctor
+          await transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: doctorEmail,
+            subject: 'New Pending Appointment',
+            html: `
+              <h1>New Appointment Request</h1>
+              <p>Dear ${doctorName},</p>
+              <p>You have a new pending appointment:</p>
+              <ul>
+                <li><strong>Date:</strong> ${date}</li>
+                <li><strong>Time Slot:</strong> ${timeSlot}</li>
+                <li><strong>Patient:</strong> ${patientName}</li>
+              </ul>
+              <p>Please review and confirm the appointment in your dashboard.</p>
+            `,
+          });
+    
+          console.log(`Email sent to doctor (${doctorEmail}) about the new appointment.`);
+        }
+    
 
     res.status(201).json({ message: 'Appointment created successfully.', appointment: newAppointment });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 // Fetch all appointments (Admin only)
 const getAllAppointments = async (req, res) => {
@@ -77,7 +131,6 @@ const getAppointments = async (req, res) => {
 const getAppointmentsForUser = async (req, res) => {
   try {
     const { id, role } = req.user;
-
     // Validate role
     if (role !== 'patient') {
       return res.status(403).json({ error: 'Unauthorized access' });
@@ -246,6 +299,13 @@ const updateAppointmentStatus = async (req, res) => {
       console.log('Appointment not found');
       return res.status(404).json({ error: 'Appointment not found' });
     }
+
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: appointment.patientId.user.email,
+      subject: 'Appointment Status Updated',
+      html: `<h1>Hello ${appointment.patientId.user.name},</h1><p>Your appointment status has been updated to: <strong>${status}</strong>.</p>`,
+    });
 
     console.log('Appointment updated successfully');
     res.status(200).json({ message: 'Appointment updated successfully', appointment });

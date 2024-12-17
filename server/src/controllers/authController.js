@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const {resetPasswordInfo} = require('../config/mailer');
 require('dotenv').config();
 const Patient = require('../models/patient-model');
+const welcomeInfo = require('../config/mailer');
 
 const loginHandler = async (req, res) => {
   const { identifier, password } = req.body;
@@ -27,8 +28,8 @@ const loginHandler = async (req, res) => {
 
 const registerHandler = async (req, res) => {
 
-  const { email, pin} = req.body;
- 
+  const { email, pin } = req.body;
+
   console.log(`Received PIN: ${pin}`);
   try {
     const verification = await Verification.findOne({ email, pin });
@@ -44,7 +45,7 @@ const registerHandler = async (req, res) => {
     }
 
     // Create user in User collection
-     const newUser = await User.create({
+     newUser = new User({
       icNumber: verification.icOrPassport,
       name: verification.fullName,
       email: verification.email,
@@ -58,10 +59,21 @@ const registerHandler = async (req, res) => {
     // Delete verification record
     await Verification.deleteOne({ email });
 
-    console.log(`User created: ${newUser}`);
+    // Save user document
+    await newUser.save();
+
+    // Create patient record in Patient collection
+    const patient = new Patient({
+      user: newUser._id,
+      address: '',
+      medicalHistory: '',
+    });
+    await patient.save();
+
+    await welcomeInfo(req, res, newUser.name, newUser.email);
 
     console.log('Account created successfully!');
-    res.status(200).json({ message: 'Account created successfully!', userId: newUser._id });
+    res.status(200).json({ message: 'Account created successfully!' });
   } catch (err) {
     console.error('Error during PIN verification:', err);
     res.status(500).json({ message: 'Verification failed.', error: err.message });

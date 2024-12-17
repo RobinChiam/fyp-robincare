@@ -32,15 +32,52 @@ import CompleteAppointment from "../pages/doctor/CompleteAppointment";
 import AppointmentInfo from "../pages/patient/AppointmentInfo";
 import HealthRecordInfo from "../pages/patient/HealthRecordInfo"; 
 import InvoiceInfo from "../pages/patient/InvoiceInfo";
+import AdminInvoiceInfo from "../pages/admin/InvoiceInfo";
+import DoctorInfo from "../pages/admin/DoctorInfo";
+import PatientInfo from "../pages/admin/PatientInfo";
+import AdminHealthRecords from "../pages/admin/HealthRecords";
+import HashRecord from "../pages/admin/HashRecord";
+import DoctorAppointments from "../pages/doctor/DoctorAppointments";
+import { useSelector } from 'react-redux';
 
-const AppRoutes = () => (
+
+
+const AppRoutes = () => {
+
+    const user = useSelector((state) => state.user.userDetails);
+
+    const getDashboardPath = () => {
+      switch (user?.role) {
+        case "admin":
+          return "/dashboard/admin";
+        case "doctor":
+          return "/dashboard/doctor";
+        case "patient":
+          return "/dashboard/patient";
+        default:
+          return "/";
+      }
+    };
+
+return(
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/about-us" element={<AboutUsPage />} />
+      <Route path="/about" element={<AboutUsPage />} />
       <Route path="/contact-us" element={<ContactUsPage />} />
+      <Route path="/contact" element={<ContactUsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      
+      {/* Redirect `/dashboard` to the appropriate role-based dashboard */}
+      <Route
+        path="/dashboard"
+        element={
+          user ? <Navigate to={getDashboardPath()} replace /> : <Navigate to="/login" replace />
+        }
+      />
+
             {/* Protected Routes */}
       <Route
         path="/dashboard/patient"
@@ -63,6 +100,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoute allowedRoles={['doctor']}>
             <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/doctor/history"
+        element={
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <DoctorAppointments />
           </ProtectedRoute>
         }
       />
@@ -122,6 +167,22 @@ const AppRoutes = () => (
           </ProtectedRoute>
         }
       /> }
+      { <Route
+        path="/dashboard/admin/hash-records"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <HashRecord />
+          </ProtectedRoute>
+        }
+      /> }
+      { <Route
+        path="/dashboard/admin/health-records"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminHealthRecords />
+          </ProtectedRoute>
+        }
+      /> }
       <Route
         path="/dashboard/admin/doctors"
         element={
@@ -131,10 +192,35 @@ const AppRoutes = () => (
         }
       />
       <Route
+        path="/dashboard/admin/doctor/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DoctorInfo />
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+      path ="/dashboard/admin/invoice/:id" 
+      element={
+          <ProtectedRoute allowedRoles={['admin']}>
+          <AdminInvoiceInfo />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route
         path="/dashboard/admin/patients"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminPatients />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/admin/patient/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <PatientInfo />
           </ProtectedRoute>
         }
       />
@@ -211,6 +297,6 @@ const AppRoutes = () => (
       <Route path ="/blog/:id" element={<BlogDetailPage />}/>
       <Route path ="/terms-and-privacy" element={<TermsPrivacyPage />} />
     </Routes>
-);
+)};
 
 export default AppRoutes;

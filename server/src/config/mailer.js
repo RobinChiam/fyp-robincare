@@ -28,6 +28,14 @@ const contactUsHtml = (username, message) =>`
 
 `;
 
+const welcomeHtml = (username) =>
+`
+<h1>Hello ${username},</h1>
+
+<p>Your account has been successfully created.</p>
+
+`;
+
    const transporter = nodeMailer.createTransport({
         host: 'tactigon.mschosting.com',
         port: 465,
@@ -37,6 +45,8 @@ const contactUsHtml = (username, message) =>`
             pass: process.env.MAIL_PASSWORD
             }
         });
+
+
 
 module.exports = {
 
@@ -83,6 +93,22 @@ module.exports = {
         console.error('Error Sending reset password email: ', error);
         throw error;
         }
+    },
+
+    welcomeInfo: async(req, res, username, email) => {
+        try {
+            await transporter.sendMail({
+        from: process.env.MAIL_USER,
+        to: email,
+        subject: `Welcome ${username}! `,
+        html: welcomeHtml(username)
+    })
+        console.log(`Email Sent to ${email}!`);
+        } catch (error) {
+        console.error('Error Sending reset password email: ', error);
+        throw error;
+        }
     }
+
 
 };

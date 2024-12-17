@@ -99,9 +99,14 @@ const LoginForm = () => {
             onChange={handleChange}
           />
         </FormControl>
-        <Button colorScheme="blue" width="100%" onClick={handleLogin}>
+        <Button
+          colorScheme="blue"
+          width="100%"
+          onClick={handleLogin}
+          _hover={{ bg: 'blue.600' }}
+        >
           Login
-      </Button>
+        </Button>
         <HStack justify="space-between" width="100%">
           <Button variant="link" colorScheme="blue" as="a" href="/forgot-password">
             Forgot Password?

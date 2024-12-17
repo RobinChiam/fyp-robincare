@@ -2,6 +2,8 @@ const crypto = require('crypto');
 const Verification = require('../models/verification-model'); // Temporary verification model
 const { verifyPINInfo } = require('../config/mailer');
 const { body, validationResult } = require('express-validator');
+const User = require('../models/user-model');
+
 
 const registerEmail = ([
   body('icOrPassport').notEmpty().withMessage('IC or Passport is required.'),
@@ -30,9 +32,9 @@ const registerEmail = ([
   const { icOrPassport, fullName, email, dob, phoneNumber, gender, password } = req.body;
 
   try {
-    const existingVerification = await Verification.findOne({ email });
+    const existingEmail = await User.findOne({ email });
 
-    if (existingVerification) {
+    if (existingEmail) {
       return res.status(400).json({ message: 'A verification record already exists for this email. Please check your email for the PIN.' });
     }
 

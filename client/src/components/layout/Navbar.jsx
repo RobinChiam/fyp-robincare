@@ -97,7 +97,7 @@ const Navbar = () => {
               <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
             </MenuButton>
             <MenuList>
-              <MenuItem as="a" href={getDashboardLink()} color="black">
+              <MenuItem as="a" href={getDashboardLink()} color={textColor}>
                 Dashboard
               </MenuItem>
               <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>

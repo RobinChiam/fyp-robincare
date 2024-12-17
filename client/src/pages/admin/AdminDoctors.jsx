@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Box, Heading, VStack, Text, Spinner } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Spinner,
+  Text,
+  Button,
+} from "@chakra-ui/react";
 import AdminNavbar from "../../components/layout/AdminNavbar";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 
 const AdminDoctors = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -18,6 +32,7 @@ const AdminDoctors = () => {
         setLoading(false);
       }
     };
+
     fetchDoctors();
   }, []);
 
@@ -28,16 +43,37 @@ const AdminDoctors = () => {
         <Heading mb={4}>Doctors</Heading>
         {loading ? (
           <Spinner />
+        ) : doctors.length === 0 ? (
+          <Text>No doctors found.</Text>
         ) : (
-          <VStack spacing={4} align="stretch">
-            {doctors.map((doctor) => (
-              <Box key={doctor.id} p={4} borderWidth={1} borderRadius="md">
-                <Text><strong>Name:</strong> {doctor.user.name}</Text>
-                <Text><strong>Specialization:</strong> {doctor.specialization}</Text>
-                <Text><strong>Email:</strong> {doctor.user.email}</Text>
-              </Box>
-            ))}
-          </VStack>
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Name</Th>
+                <Th>Specialization</Th>
+                <Th>Email</Th>
+                <Th>Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {doctors.map((doctor) => (
+                <Tr key={doctor._id}>
+                  <Td>{doctor.user.name}</Td>
+                  <Td>{doctor.specialization}</Td>
+                  <Td>{doctor.user.email}</Td>
+                  <Td>
+                    <Button
+                      colorScheme="blue"
+                      size="sm"
+                      onClick={() => navigate(`/dashboard/admin/doctor/${doctor._id}`)}
+                    >
+                      Details
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
         )}
       </Box>
     </Box>

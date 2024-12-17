@@ -15,11 +15,8 @@ const Footer = () => {
           © {new Date().getFullYear()} Healthcare System. All rights reserved.
         </Text>
         <Stack direction="row" spacing={4}>
-          <Link href="/terms" fontSize="sm">
+          <Link href="/terms-and-privacy" fontSize="sm">
             Terms of Service
-          </Link>
-          <Link href="/privacy" fontSize="sm">
-            Privacy Policy
           </Link>
         </Stack>
       </Flex>

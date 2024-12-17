@@ -20,8 +20,7 @@ const authMiddleware = (roles = []) => {
 
       if (roles.length && !roles.includes(decoded.role)) {
         return res.status(403).json({ error: 'Access forbidden: insufficient role permissions' });
-      }
-      console.log(req.user);
+      }      
       next(); // Passes control to the next middleware or route handler
     } catch (err) {
       console.error('JWT verification failed:', err.message);

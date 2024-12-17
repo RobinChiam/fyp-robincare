@@ -45,18 +45,46 @@ const RegisterForm = () => {
 
   const validateStep1 = () => {
     const newErrors = {};
-    if (!formData.icOrPassport) newErrors.icOrPassport = 'IC or Passport is required.';
+  
+    // Format IC Number: Remove all non-numeric characters
+    if (formData.icOrPassport) {
+      formData.icOrPassport = formData.icOrPassport.replace(/\D/g, ''); // Strip all non-digits
+    }
+  
+    // Date of Birth Validation
+    if (!formData.dob) {
+      newErrors.dob = 'Date of Birth is required.';
+    } else {
+      const dob = new Date(formData.dob);
+      const formattedDOB = dob
+        .toISOString()
+        .slice(2, 10) // Extract YY-MM-DD
+        .replace(/-/g, ''); // Format as YYMMDD
+  
+      // IC Number Validation
+      if (!formData.icOrPassport) {
+        newErrors.icOrPassport = 'IC Number is required.';
+      } else if (!/^\d{12}$/.test(formData.icOrPassport)) {
+        newErrors.icOrPassport = 'IC Number must be exactly 12 digits long.';
+      } else {
+        const icFirstSix = formData.icOrPassport.slice(0, 6);
+        if (icFirstSix !== formattedDOB) {
+          newErrors.icOrPassport = 'IC Number does not match the Date of Birth.';
+        }
+      }
+    }
+  
     if (!formData.fullName) newErrors.fullName = 'Full Name is required.';
     if (!formData.email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email))
       newErrors.email = 'Valid email is required.';
-    if (!formData.dob) newErrors.dob = 'Date of Birth is required.';
     if (!formData.phoneNumber || !/^\d{10,15}$/.test(formData.phoneNumber))
       newErrors.phoneNumber = 'Phone Number must be 10-15 digits.';
     if (!formData.gender) newErrors.gender = 'Gender is required.';
+  
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
+  
 
   const handleNextStep = async () => {
     if (step === 1) {
@@ -188,7 +216,7 @@ const RegisterForm = () => {
       ) : (
         <>
           <Heading mb={6}>Register</Heading>
-          <Progress value={(step / 4) * 100} mb={6} />
+          <Progress value={(step / 4) * 100} size="sm" colorScheme="blue" mb={6} />
           <VStack spacing={4}>
             {step === 1 && (
               <>

@@ -1,5 +1,7 @@
 const Blog = require("../models/blog-model");
 const Doctor = require('../models/doctor-model');
+const { transporter } = require('../config/mailer');
+const User = require('../models/user-model');
 
 
 // Get all blogs for a doctor
@@ -38,6 +40,18 @@ const createBlog = async (req, res) => {
       });
   
       await newBlog.save();
+
+       // Notify all users about the new blog
+    const users = await User.find({ role: 'patient', subscribedToEmails: true }, 'email');
+    const recipientEmails = users.map((user) => user.email);
+
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: recipientEmails,
+      subject: 'New Blog Published',
+      html: `<h1>${title}</h1><p>${content}</p><p>Check out the blog now!</p>`,
+    });
+
       res.status(201).json(newBlog);
     } catch (error) {
       console.log("Error creating blog:", error.message);

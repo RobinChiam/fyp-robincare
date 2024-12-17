@@ -26,15 +26,14 @@ const BookAppointment = () => {
   useEffect(() => {
     const fetchPatientId = async () => {
       try {
-        const response = await axiosInstance.get(`/patient/${user._id}`);
-        const patient = response.data;
-        setPatientId(patient._id); // Set the patientId from the fetched patient data
+        const response = await axiosInstance.get('/patient/id'); // New route
+        setPatientId(response.data.patientId);
       } catch (error) {
         console.error('Error fetching patient ID:', error.message);
         setMessage('Could not fetch patient details. Please try again later.');
       }
     };
-
+  
     if (user?.role === 'patient') {
       fetchPatientId();
     }
@@ -57,13 +56,21 @@ const BookAppointment = () => {
 
   const generateTimeSlots = (startTime, endTime, minTime) => {
     const slots = [];
-    let current = new Date(`1970-01-01T${startTime}:00`);
-    const end = new Date(`1970-01-01T${endTime}:00`);
-
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const currentDay = String(currentDate.getDate()).padStart(2, '0');
+  
+    // Base date will be today's date
+    const baseDate = `${currentYear}-${currentMonth}-${currentDay}`;
+  
+    let current = new Date(`${baseDate}T${startTime}:00`);
+    const end = new Date(`${baseDate}T${endTime}:00`);
+  
     while (current < end) {
       const next = new Date(current.getTime() + 30 * 60000); // Add 30 minutes
       if (!minTime || current >= minTime) {
-        const formatTime = time =>
+        const formatTime = (time) =>
           time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         slots.push(`${formatTime(current)} - ${formatTime(next)}`);
       }
@@ -71,6 +78,7 @@ const BookAppointment = () => {
     }
     return slots;
   };
+  
 
   const handleDoctorChange = async (doctorId) => {
     setSelectedDoctor(doctorId);
@@ -92,70 +100,53 @@ const BookAppointment = () => {
 
   const handleDateChange = async (selectedDate) => {
     setDate(selectedDate);
-
+  
     try {
-      const doctor = doctors.find(doc => doc._id === selectedDoctor);
-
+      const doctor = doctors.find((doc) => doc._id === selectedDoctor);
+  
       if (!doctor || !doctor.consultationHours) {
         setTimeSlots(['No consultation hours available for this doctor']);
         return;
       }
-
+  
       const { start, end } = doctor.consultationHours;
       const currentDate = new Date();
       const isToday = selectedDate === currentDate.toISOString().split('T')[0];
-
-      // Check if the current time is past the consultation end time for today
-      if (isToday) {
-        const consultationEndTime = new Date(`1970-01-01T${end}:00`);
-        const currentTime = new Date(`1970-01-01T${currentDate.toTimeString().split(' ')[0]}`);
-
-        if (currentTime >= consultationEndTime) {
-          setTimeSlots(['Doctor is unavailable for today, please select a different date']);
-          return;
-        }
-      }
-
-      // Generate minimum time for today's date (2 hours after now if today)
-      const minTime = isToday ? new Date(currentDate.getTime() + 2 * 60 * 60 * 1000) : null;
-
+  
+      // Generate minimum time for today's date
+      const minTime = isToday ? new Date() : null;
+  
       const response = await axiosInstance.post('/appointments/available-slots', {
         doctorId: selectedDoctor,
-        date: selectedDate,
+        date: selectedDate, // Ensure only the date (YYYY-MM-DD) is sent
       });
-
+  
       const bookedSlots = response.data.bookedSlots || [];
-      const availableSlots = generateTimeSlots(start, end, minTime).filter(slot => !bookedSlots.includes(slot));
-
+      const availableSlots = generateTimeSlots(start, end, minTime).filter(
+        (slot) => !bookedSlots.includes(slot)
+      );
+  
       if (availableSlots.length > 0) {
         setTimeSlots(availableSlots);
       } else {
         setTimeSlots(['Doctor has been fully booked, please select a different date']);
       }
     } catch (error) {
-      console.error('Error fetching available slots:', error.response?.data || error.message);
-      setMessage(error.response?.data?.error || 'Error fetching available slots');
+      console.error('Error fetching available slots:', error.message);
+      setMessage('Error fetching available slots.');
     }
   };
 
   const handleSubmit = async () => {
     try {
-      console.log('Request Payload:', {
+      const response = await axiosInstance.post('/appointments/create', {
         patientId,
         doctorId: selectedDoctor,
         date,
         timeSlot,
         reason,
       });
-
-      const response = await axiosInstance.post('/appointments/create', {
-        patientId, // Use the fetched patientId
-        doctorId: selectedDoctor,
-        date,
-        timeSlot,
-        reason,
-      });
-
+  
       toast({
         title: 'Appointment Created',
         description: response.data.message,
@@ -163,12 +154,22 @@ const BookAppointment = () => {
         duration: 5000,
         isClosable: true,
       });
-
+  
       navigate('/dashboard/patient');
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Error booking appointment');
+      const errorMessage = error.response?.data?.message || 'Error booking appointment';
+      setMessage(errorMessage);
+  
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
+  
 
   return (
     <Box>
@@ -211,7 +212,10 @@ const BookAppointment = () => {
                 <option key={index} value={slot}>{slot}</option>
               ))}
             </Select>
-            <Button colorScheme="blue" onClick={handleSubmit} disabled={!timeSlot}>
+            <Button colorScheme="blue" 
+            onClick={handleSubmit} 
+            disabled={!timeSlot || timeSlot === 'Doctor has been fully booked, please select a different date' 
+              || timeSlot === 'No consultation hours available for this doctor'}>
               Confirm Appointment
             </Button>
             <Button variant="outline" onClick={() => setStep(1)}>

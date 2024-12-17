@@ -31,6 +31,19 @@ const AdminNavbar = () => {
     navigate("/login");
   };
 
+  const getDashboardLink = () => {
+    switch (user?.role) {
+      case 'patient':
+        return '/dashboard/patient';
+      case 'doctor':
+        return '/dashboard/doctor';
+      case 'admin':
+        return '/dashboard/admin';
+      default:
+        return '/';
+    }
+  };
+
   return (
     <Flex
       as="nav"
@@ -54,6 +67,9 @@ const AdminNavbar = () => {
         <Box as="a" href="/dashboard/admin/invoices" padding="2" borderRadius="md">
           Invoices
         </Box>
+        <Box as="a" href="/dashboard/admin/health-records" padding="2" borderRadius="md">
+          Health Records
+        </Box>
       </HStack>
 
       <HStack spacing="6" align="center">
@@ -71,6 +87,9 @@ const AdminNavbar = () => {
               <Avatar size="md" src={user?.profilePicture} />
             </MenuButton>
             <MenuList>
+              <MenuItem as="a" href={getDashboardLink()} color={textColor}>
+                Dashboard
+              </MenuItem>
               <MenuItem as="a" href="/dashboard/admin/edit" color={textColor}>
                 Edit Account
               </MenuItem>
