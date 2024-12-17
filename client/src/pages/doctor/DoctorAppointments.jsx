@@ -4,57 +4,44 @@ import DoctorNavbar from "../../components/layout/DoctorNavbar";
 import axiosInstance from "../../utils/axiosInstance";
 
 const DoctorAppointments = () => {
-  const [futureAppointments, setFutureAppointments] = useState([]);
-  const [missedAppointmentsCount, setMissedAppointmentsCount] = useState(0);
-  const [totalAppointmentsCount, setTotalAppointmentsCount] = useState(0);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchAppointmentsHistory = async () => {
       try {
         const response = await axiosInstance.get("/appointments/doctor-appointments");
-        const {
-          futureAppointments = [],
-          missedAppointmentsCount = 0,
-          totalAppointmentsCount = 0,
-        } = response.data;
-
-        setFutureAppointments(futureAppointments);
-        setMissedAppointmentsCount(missedAppointmentsCount);
-        setTotalAppointmentsCount(totalAppointmentsCount);
+        const { futureAppointments = [], missedAppointmentsCount = 0 } = response.data;
+        setAppointments(response.data.appointments || []);
       } catch (error) {
-        console.error("Error fetching appointments:", error.message);
+        console.error("Error fetching appointments history:", error.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchAppointments();
+    fetchAppointmentsHistory();
   }, []);
 
   return (
     <Box>
       <DoctorNavbar />
       <Box p={6}>
-        <Heading mb={4}>Appointments Dashboard</Heading>
+        <Heading mb={4}>Appointments History</Heading>
         {loading ? (
           <Spinner />
         ) : (
           <VStack spacing={4} align="stretch">
-            <Text fontWeight="bold">Total Appointments: {totalAppointmentsCount}</Text>
-            <Text fontWeight="bold">Missed Appointments: {missedAppointmentsCount}</Text>
-            <Divider />
-            <Heading size="md" mt="4">Upcoming Appointments</Heading>
-            {futureAppointments.length > 0 ? (
-              futureAppointments.map((appointment) => (
+            {appointments.length > 0 ? (
+              appointments.map((appointment) => (
                 <Box key={appointment._id} p={4} borderWidth={1} borderRadius="md">
                   <Text><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</Text>
-                  <Text><strong>Time:</strong> {appointment.timeSlot}</Text>
-                  <Text><strong>Patient:</strong> {appointment.patientId?.name || "Unknown"}</Text>
+                  <Text><strong>Time Slot:</strong> {appointment.timeSlot}</Text>
+                  <Text><strong>Patient:</strong> {appointment.patientId?.user?.name || "N/A"}</Text>
                   <Text><strong>Status:</strong> {appointment.status}</Text>
                 </Box>
               ))
             ) : (
-              <Text>No Upcoming Appointments</Text>
+              <Text>No Appointments Found</Text>
             )}
           </VStack>
         )}

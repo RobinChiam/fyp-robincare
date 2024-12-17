@@ -1,121 +1,112 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Flex,
   Box,
-  HStack,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  Heading,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Spinner,
+  Text,
   Button,
-  Avatar,
-  IconButton,
-  useColorMode,
+  TableContainer,
+  Center,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { FaSun, FaMoon } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../../features/userSlice";
+import Navbar from "../../components/layout/Navbar";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../utils/axiosInstance";
 
-const Navbar = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
-  const textColor = useColorModeValue("black", "white");
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.userDetails); // Use Redux state
+const AppointmentHistory = () => {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const onLogout = () => {
-    localStorage.removeItem("token"); // Remove JWT
-    dispatch(clearUser()); // Clear Redux state
-    navigate("/login");
-  };
+  const bgColor = useColorModeValue("gray.50", "gray.800");
+  const cardBg = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "gray.200");
+  const tableStripedColor = useColorModeValue("gray.100", "gray.600");
 
-  const getDashboardLink = () => {
-    switch (user?.role) {
-      case 'patient':
-        return '/dashboard/patient';
-      case 'doctor':
-        return '/dashboard/doctor';
-      case 'admin':
-        return '/dashboard/admin';
-      default:
-        return '/';
-    }
-  };
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await axiosInstance.get("/appointments/history");
+        setHistory(response.data);
+      } catch (error) {
+        console.error("Error fetching appointment history:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   return (
-    <Flex
-      as="nav"
-      bg="blue.500"
-      color="white"
-      px="6"
-      py="4"
-      justify="space-between"
-      align="center"
-    >
-      <HStack spacing="8">
-        <Box as="a" href="/" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
-          Home
-        </Box>
-        <Menu>
-          <MenuButton as={Button} backgroundColor={"blue.500"} _hover={{ backgroundColor: "blue.600" }} color={"white"}>
-            Appointments
-          </MenuButton>
-          <MenuList>
-            <MenuItem as="a" href="/dashboard/patient/book" color={textColor} _hover={{ backgroundColor: "blue.600" }}>
-              Book Appointments
-            </MenuItem>
-            <MenuItem as="a" href="/dashboard/patient/history" color={textColor} _hover={{ backgroundColor: "blue.600" }}>
-              Appointment History
-            </MenuItem>
-          </MenuList>
-        </Menu>
-        <Box as="a" href="/dashboard/patient/records" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
-          Health Records
-        </Box>
-        <Box as="a" href="/dashboard/patient/invoices" _hover={{ backgroundColor: "blue.600" }} padding={"2"} borderRadius={"md"}>
-          Invoices
-        </Box>
-      </HStack>
-
-      <HStack spacing="6" align="center">
-        <IconButton
-          aria-label="Toggle theme"
-          icon={colorMode === "light" ? <FaSun /> : <FaMoon />}
-          onClick={toggleColorMode}
-          isRound
-          size="md"
-          bg="transparent"
-          color={colorMode === "light" ? "orange.400" : "yellow.400"}
-          _hover={{ bg: "transparent" }}
-        />
-
-        {user ? (
-          <Menu>
-            <MenuButton as={Button} rounded="full" variant="link" cursor="pointer">
-              <Avatar size="md" src={`http://localhost:5000${user?.profilePicture}`} />
-            </MenuButton>
-            <MenuList>
-              <MenuItem as="a" href={getDashboardLink()} color={textColor}>
-                Dashboard
-              </MenuItem>
-              <MenuItem as="a" href="/dashboard/patient/edit" color={textColor}>
-                Edit Account
-              </MenuItem>
-              <MenuItem onClick={onLogout} color={textColor}>
-                Logout
-              </MenuItem>
-            </MenuList>
-          </Menu>
+    <Box minH="100vh" bg={bgColor} color={textColor}>
+      <Navbar />
+      <Box p={8}>
+        <Heading mb={6} textAlign="center" color="blue.500">
+          Appointment History
+        </Heading>
+        {loading ? (
+          <Center>
+            <Spinner size="xl" />
+          </Center>
+        ) : history.length === 0 ? (
+          <Center>
+            <Text fontSize="lg" color="gray.500">
+              No appointments found.
+            </Text>
+          </Center>
         ) : (
-          <Button as="a" href="/login" colorScheme="blue">
-            Login
-          </Button>
+          <TableContainer
+            borderRadius="lg"
+            boxShadow="lg"
+            bg={cardBg}
+            overflow="hidden"
+          >
+            <Table variant="striped" colorScheme="blue">
+              <Thead bg={tableStripedColor}>
+                <Tr>
+                  <Th>Date</Th>
+                  <Th>Time</Th>
+                  <Th>Doctor</Th>
+                  <Th>Specialization</Th>
+                  <Th>Status</Th>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {history.map((item) => (
+                  <Tr key={item._id} _hover={{ bg: tableStripedColor }}>
+                    <Td>{new Date(item.date).toLocaleDateString()}</Td>
+                    <Td>{item.timeSlot}</Td>
+                    <Td>{item.doctorId?.user?.name || "Unknown Doctor"}</Td>
+                    <Td>{item.doctorId?.specialization || "N/A"}</Td>
+                    <Td>{item.status}</Td>
+                    <Td>
+                      <Button
+                        colorScheme="blue"
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/dashboard/patient/appointment/${item._id}`)
+                        }
+                      >
+                        Details
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
         )}
-      </HStack>
-    </Flex>
+      </Box>
+    </Box>
   );
 };
 
-export default Navbar;
+export default AppointmentHistory;

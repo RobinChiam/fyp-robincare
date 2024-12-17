@@ -75,9 +75,9 @@ const DoctorNavbar = () => {
             </MenuItem>
           </MenuList>
         </Menu>
-        <Box as="a" href="/dashboard/doctor/chats" padding="2" borderRadius="md">
-          Chats
-        </Box>
+        <Box as="a" href="/dashboard/doctor/history" padding="2" borderRadius="md">
+           Appointments History
+        </Box>      
       </HStack>
 
       <HStack spacing="6" align="center">

@@ -11,10 +11,14 @@ import {
   Spinner,
   Text,
   Button,
+  TableContainer,
+  Center,
 } from "@chakra-ui/react";
 import Navbar from "../../components/layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
+import { useColorModeValue } from "@chakra-ui/react";
+
 
 const AppointmentHistory = () => {
   const [history, setHistory] = useState([]);
@@ -37,47 +41,59 @@ const AppointmentHistory = () => {
   }, []);
 
   return (
-    <Box>
+    <Box minH="100vh" bg="gray.50">
       <Navbar />
-      <Box p={6}>
-        <Heading mb={4}>Appointment History</Heading>
+      <Box p={8}>
+        <Heading mb={6} textAlign="center" color="blue.600">
+          Appointment History
+        </Heading>
         {loading ? (
-          <Spinner />
+          <Center>
+            <Spinner size="xl" />
+          </Center>
         ) : history.length === 0 ? (
-          <Text>No appointments found.</Text>
+          <Center>
+            <Text fontSize="lg" color="gray.500">
+              No appointments found.
+            </Text>
+          </Center>
         ) : (
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Date</Th>
-                <Th>Time</Th>
-                <Th>Doctor</Th>
-                <Th>Specialization</Th>
-                <Th>Status</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {history.map((item) => (
-                <Tr key={item._id}>
-                  <Td>{new Date(item.date).toLocaleDateString()}</Td>
-                  <Td>{item.timeSlot}</Td>
-                  <Td>{item.doctorId?.user?.name || "Unknown Doctor"}</Td>
-                  <Td>{item.doctorId?.specialization || "N/A"}</Td>
-                  <Td>{item.status}</Td>
-                  <Td>
-                    <Button
-                      colorScheme="blue"
-                      size="sm"
-                      onClick={() => navigate(`/dashboard/patient/appointment/${item._id}`)}
-                    >
-                      Details
-                    </Button>
-                  </Td>
+        <TableContainer borderRadius="lg" boxShadow="lg" bg={useColorModeValue("white", "gray.800")}>
+        <Table variant="striped" colorScheme="blue">
+              <Thead>
+                <Tr>
+                  <Th>Date</Th>
+                  <Th>Time</Th>
+                  <Th>Doctor</Th>
+                  <Th>Specialization</Th>
+                  <Th>Status</Th>
+                  <Th>Actions</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {history.map((item) => (
+                  <Tr key={item._id} _hover={{ bg: "gray.100" }}>
+                    <Td>{new Date(item.date).toLocaleDateString()}</Td>
+                    <Td>{item.timeSlot}</Td>
+                    <Td>{item.doctorId?.user?.name || "Unknown Doctor"}</Td>
+                    <Td>{item.doctorId?.specialization || "N/A"}</Td>
+                    <Td>{item.status}</Td>
+                    <Td>
+                      <Button
+                        colorScheme="blue"
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/dashboard/patient/appointment/${item._id}`)
+                        }
+                      >
+                        Details
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
         )}
       </Box>
     </Box>
