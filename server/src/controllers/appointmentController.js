@@ -99,28 +99,47 @@ const getAppointments = async (req, res) => {
   try {
     const { id, role } = req.user;
 
-    // Validate role
-    if (role !== 'patient') {
-      return res.status(403).json({ error: 'Unauthorized access' });
-    }
-
-    // Check if patient record exists
-    const patientRecord = await Patient.findOne({ user: id });
-    if (!patientRecord) {
-      return res.status(404).json({ error: 'Patient record not found' });
-    }
-
-    const patientId = patientRecord._id;
-
-    // Fetch appointments and populate doctor details
+    if (role === 'patient') {
+       // Check if patient record exists
+      const patientRecord = await Patient.findOne({ user: id });
+      if (!patientRecord) {
+        return res.status(404).json({ error: 'Patient record not found' });
+      }
+  
+      const patientId = patientRecord._id;
+          // Fetch appointments and populate doctor details
     const appointments = await Appointment.find({ patientId: patientId })
-      .populate({
-        path: 'doctorId',
-        select: 'specialization user',
-        populate: { path: 'user', select: 'name email' },
-      });
+    .populate({
+      path: 'doctorId',
+      select: 'specialization user',
+      populate: { path: 'user', select: 'name email' },
+    });
 
     res.status(200).json(appointments);
+    }
+   
+   else if(role === 'doctor') {
+    // Check if doctor record exists
+    const doctorRecord = await Doctor.findOne({ user: id });
+    if (!doctorRecord) {
+      return res.status(404).json({ error: 'Doctor record not found' });    
+    }
+
+    const doctorId = doctorRecord._id;
+    // Fetch appointments and populate doctor details
+    const appointments = await Appointment.find({ doctorId: doctorId })
+    .populate({
+      path: 'doctorId',
+      select: 'specialization user',
+      populate: { path: 'user', select: 'name email' },
+    });
+    res.status(200).json(appointments);
+  }
+  else{
+    return res.status(403).json({ error: 'Unauthorized access' });
+  }
+
+   
   } catch (err) {
     console.error("Error fetching appointments:", err.message);
     res.status(500).json({ error: 'Server error' });

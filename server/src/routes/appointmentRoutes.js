@@ -17,7 +17,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Routes
 router.post('/create', authMiddleware(['doctor', 'patient']), createAppointment);
-router.get('/history', authMiddleware(['patient']), getAppointments);
+router.get('/history', authMiddleware(['patient', 'doctor']), getAppointments);
 router.get('/my-appointments', authMiddleware(['doctor', 'patient']), getAppointmentsForUser);
 router.get('/doctor-appointments', authMiddleware(['doctor']), getAppointmentsForDoctor);
 router.get('/:id', authMiddleware(['doctor', 'patient', 'admin']), getAppointmentById);
