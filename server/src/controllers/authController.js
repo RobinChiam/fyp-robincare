@@ -27,58 +27,38 @@ const loginHandler = async (req, res) => {
 
 
 const registerHandler = async (req, res) => {
+  const { email, pin, subscribedToEmails } = req.body;
 
-  const { email, pin } = req.body;
-
-  console.log(`Received PIN: ${pin}`);
   try {
     const verification = await Verification.findOne({ email, pin });
 
     if (!verification) {
-      return res.status(400).json({ message: 'Invalid PIN or email.' });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'An account with this email already exists.' });
+      return res.status(400).json({ message: "Invalid PIN or email." });
     }
 
     // Create user in User collection
-     newUser = new User({
+    const newUser = new User({
       icNumber: verification.icOrPassport,
       name: verification.fullName,
       email: verification.email,
-      role: 'patient',
+      role: "patient",
       dob: verification.dob,
       phone: verification.phone,
       gender: verification.gender,
       password: verification.password,
+      subscribedToEmails: subscribedToEmails || false, // Save subscription preference
     });
 
-    // Delete verification record
     await Verification.deleteOne({ email });
-
-    // Save user document
     await newUser.save();
 
-    // Create patient record in Patient collection
-    const patient = new Patient({
-      user: newUser._id,
-      address: '',
-      medicalHistory: '',
-    });
-    await patient.save();
-
-    await welcomeInfo(req, res, newUser.name, newUser.email);
-
-    console.log('Account created successfully!');
-    res.status(200).json({ message: 'Account created successfully!' });
+    res.status(200).json({ message: "Account created successfully!" });
   } catch (err) {
-    console.error('Error during PIN verification:', err);
-    res.status(500).json({ message: 'Verification failed.', error: err.message });
+    console.error("Error during registration:", err);
+    res.status(500).json({ message: "Registration failed.", error: err.message });
   }
 };
+
 
 
 

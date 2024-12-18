@@ -2,10 +2,10 @@ const HealthRecord = require('../models/healthrecords-model');
 const Patient = require('../models/patient-model');
 const fs = require('fs');
 const { storeHash, getHash } = require('../../blockchain'); // Import blockchain functions
-
+const MedicalHistory = require('../models/medicalHistory-model');
 const crypto = require('crypto');
 const path = require('path');
-const { transporter } = require('../config/mailer');
+const { medicalRecordInfo } = require('../config/mailer');
 
 
 const addRecord = async (req, res) => {
@@ -176,5 +176,66 @@ const getRecordByHash = async (req, res) => {
   }
 };
 
+const completeAppointment = async (req, res) => {
+  const session = await HealthRecord.startSession();
+  session.startTransaction();
 
-module.exports = { addRecord, getRecords, createHealthRecord, getRecordbyId, getAllHealthRecords, getRecordByHash };
+  try {
+    const { patientId, doctorId, appointmentId, diagnosis, prescription, notes } = req.body;
+
+    // Step 1: Create Health Record
+    const newRecord = await new HealthRecord({
+      patientId,
+      doctorId,
+      appointmentId,
+      diagnosis,
+      prescription,
+      notes,
+      attachments: req.files?.map((file) => `/uploads/${file.filename}`) || [],
+    }).save({ session });
+
+    // Step 2: Find Patient and Medical History
+    const patient = await Patient.findById(patientId).session(session);
+    if (!patient) throw new Error("Patient not found.");
+
+    let medicalHistory = await MedicalHistory.findOne({ hash: patient.hash }).session(session);
+    if (!medicalHistory) {
+      medicalHistory = new MedicalHistory({ healthRecords: [] });
+    }
+
+    // Step 3: Update Medical History
+    medicalHistory.healthRecords.push(newRecord._id);
+    const hash = crypto.createHash("sha256").update(Date.now().toString()).digest("hex");
+    medicalHistory.hash = hash;
+    await medicalHistory.save({ session });
+
+    // Step 4: Update Patient's Hash
+    patient.hash = hash;
+    await patient.save({ session });
+
+    // Step 5: Store Hash on Blockchain
+    await storeHash(medicalHistory._id.toString(), hash);
+
+    // Step 6: Send Notification Email
+    await medicalRecordInfo(req, res, patient.user.name, patient.user.email);
+
+    // Commit Transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json({
+      message: "Health record and medical history updated successfully!",
+      record: newRecord,
+      hash,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error in completing appointment:", error.message);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
+
+
+
+module.exports = { addRecord, getRecords, createHealthRecord, getRecordbyId, getAllHealthRecords, getRecordByHash, completeAppointment }; 

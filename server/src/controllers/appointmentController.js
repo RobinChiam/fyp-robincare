@@ -3,13 +3,14 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Patient = require('../models/patient-model');
 const Doctor = require('../models/doctor-model');
-const { transporter } = require('../config/mailer');
+const { statusinfo, appointmentInfo } = require('../config/mailer');
+require('dotenv').config();
 
 // Create a new appointment
 const createAppointment = async (req, res) => {
   try {
-    const { patientId, doctorId, date, timeSlot } = req.body;
-
+    const { patientId, doctorId, date, timeSlot, reason } = req.body;
+    console.log(req.body);
     // Check if patient already has an appointment on the same date
     const existingAppointment = await Appointment.findOne({
       patientId,
@@ -41,6 +42,7 @@ const createAppointment = async (req, res) => {
       doctorId,
       date,
       timeSlot,
+      reason,
     });
     
     await newAppointment.save();
@@ -54,26 +56,11 @@ const createAppointment = async (req, res) => {
           const doctorName = doctor.user.name;
           const patientName = patient.user.name;
     
-          // Send email notification to doctor
-          await transporter.sendMail({
-            from: process.env.MAIL_USER,
-            to: doctorEmail,
-            subject: 'New Pending Appointment',
-            html: `
-              <h1>New Appointment Request</h1>
-              <p>Dear ${doctorName},</p>
-              <p>You have a new pending appointment:</p>
-              <ul>
-                <li><strong>Date:</strong> ${date}</li>
-                <li><strong>Time Slot:</strong> ${timeSlot}</li>
-                <li><strong>Patient:</strong> ${patientName}</li>
-              </ul>
-              <p>Please review and confirm the appointment in your dashboard.</p>
-            `,
-          });
-    
+          await appointmentInfo(req, res, doctorName, doctorEmail , date, timeSlot, patientName);
+
           console.log(`Email sent to doctor (${doctorEmail}) about the new appointment.`);
         }
+
     
 
     res.status(201).json({ message: 'Appointment created successfully.', appointment: newAppointment });
@@ -129,10 +116,11 @@ const getAppointments = async (req, res) => {
     // Fetch appointments and populate doctor details
     const appointments = await Appointment.find({ doctorId: doctorId })
     .populate({
-      path: 'doctorId',
-      select: 'specialization user',
+      path: 'patientId',
+      select: 'user',
       populate: { path: 'user', select: 'name email' },
     });
+    console.log(appointments);
     res.status(200).json(appointments);
   }
   else{
@@ -202,6 +190,70 @@ const getAppointmentsForUser = async (req, res) => {
   }
 };
 
+const getAppointmentStats = async (req, res) => {
+  try {
+    const startOfMonth = moment().startOf('month').toDate();
+    const endOfMonth = moment().endOf('month').toDate();
+
+    // Total appointments in the current month
+    const totalAppointments = await Appointment.countDocuments({
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    // Aggregate to find doctor with the highest appointments
+    const doctorAppointments = await Appointment.aggregate([
+      { $match: { date: { $gte: startOfMonth, $lte: endOfMonth } } },
+      { $group: { _id: "$doctorId", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 },
+    ]);
+
+    // Populate doctor details
+    let topDoctor = null;
+    if (doctorAppointments.length > 0) {
+      topDoctor = await Doctor.findById(doctorAppointments[0]._id).populate(
+        "user",
+        "name email"
+      );
+    }
+
+    // Aggregate to find doctor with the most missed appointments
+    const missedAppointments = await Appointment.aggregate([
+      {
+        $match: {
+          date: { $lt: new Date() },
+          status: { $in: ["pending", "confirmed"] },
+        },
+      },
+      { $group: { _id: "$doctorId", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 },
+    ]);
+
+    // Populate doctor details for missed appointments
+    let missedDoctor = null;
+    if (missedAppointments.length > 0) {
+      missedDoctor = await Doctor.findById(missedAppointments[0]._id).populate(
+        "user",
+        "name email"
+      );
+    }
+
+    res.status(200).json({
+      totalAppointments,
+      topDoctor: topDoctor
+        ? { name: topDoctor.user.name, count: doctorAppointments[0].count }
+        : null,
+      missedDoctor: missedDoctor
+        ? { name: missedDoctor.user.name, count: missedAppointments[0].count }
+        : null,
+    });
+  } catch (error) {
+    console.error("Error fetching appointment stats:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 
 
 const getAppointmentsForDoctor = async (req, res) => {
@@ -246,7 +298,6 @@ const getAppointmentsForDoctor = async (req, res) => {
       new Date(appt.date) < now && ['pending', 'confirmed'].includes(appt.status)
     );
 
-    console.log(futureAppointments);
     // Send response
     res.status(200).json({
       futureAppointments,
@@ -318,13 +369,13 @@ const updateAppointmentStatus = async (req, res) => {
       console.log('Appointment not found');
       return res.status(404).json({ error: 'Appointment not found' });
     }
-
-    await transporter.sendMail({
-      from: process.env.MAIL_USER,
-      to: appointment.patientId.user.email,
-      subject: 'Appointment Status Updated',
-      html: `<h1>Hello ${appointment.patientId.user.name},</h1><p>Your appointment status has been updated to: <strong>${status}</strong>.</p>`,
+    
+    const updatedAppointment = await Appointment.findById(id)
+    .populate({
+      path: 'patientId',
+      populate: { path: 'user', select: 'name email' },
     });
+    await statusinfo(req, res, updatedAppointment.patientId.user.name, updatedAppointment.patientId.user.email, appointment.status);
 
     console.log('Appointment updated successfully');
     res.status(200).json({ message: 'Appointment updated successfully', appointment });
@@ -402,5 +453,6 @@ module.exports = {
   todayAppointments,
   getAppointmentsForDoctor,
   updateAppointmentStatus,
-  getAppointments
+  getAppointments,
+  getAppointmentStats,
 };

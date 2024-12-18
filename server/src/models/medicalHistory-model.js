@@ -9,12 +9,5 @@ const medicalHistorySchema = new mongoose.Schema({
   }, { timestamps: true },
   { collection: 'medical-history' });
 
-  medicalHistorySchema.pre('save', function(next) {
-    if (this.isModified()) {
-      this.hasChanged = Math.random().toString(36).substr(2, 9);
-    }
-    next();
-  });
-
   module.exports = mongoose.model('MedicalHistory', medicalHistorySchema);
   

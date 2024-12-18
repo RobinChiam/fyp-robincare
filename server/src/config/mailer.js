@@ -108,7 +108,79 @@ module.exports = {
         console.error('Error Sending reset password email: ', error);
         throw error;
         }
-    }
+    },
 
+    statusinfo: async(req, res, username, email, status) => {
+        try {   
+            await transporter.sendMail({
+                  from: process.env.MAIL_USER,
+                  to: email,
+                  subject: 'Appointment Status Updated',
+                  html: `<h1>Hello ${username},</h1><p>Your appointment status has been updated to: <strong>${status}</strong>.</p>`,
+                })
+                console.log(`Email Sent to ${email}!`);
+            } catch (error) {
+            console.error('Error Sending reset password email: ', error);
+            throw error;
+            }
+        },
+
+    appointmentInfo: async(req, res, username, email, date, timeSlot, patientName) => {
+        try {   
+            // Send email notification to doctor
+          await transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: email,
+            subject: 'New Pending Appointment',
+            html: `
+              <h1>New Appointment Request</h1>
+              <p>Dear ${username},</p>
+              <p>You have a new pending appointment:</p>
+              <ul>
+                <li><strong>Date:</strong> ${date}</li>
+                <li><strong>Time Slot:</strong> ${timeSlot}</li>
+                <li><strong>Patient:</strong> ${patientName}</li>
+              </ul>
+              <p>Please review and confirm the appointment in your dashboard.</p>
+            `,
+          })
+                console.log(`Email Sent to ${email}!`);
+            } catch (error) {
+            console.error('Error Sending reset password email: ', error);
+            throw error;
+            }
+        },
+
+    medicalRecordInfo: async(req, res, username, email) => {
+        try {   
+            await transporter.sendMail({
+                from: process.env.MAIL_USER,
+                to: email,
+                subject: "New Health Record Created",
+                html: `<h1>Hello ${username},</h1><p>A new health record has been created for you. Please log in to view the details.</p>`,
+              });
+                console.log(`Email Sent to ${email}!`);
+            } catch (error) {
+            console.error('Error Sending reset password email: ', error);
+            throw error;
+            }
+        },
+
+        blogInfo: async(req, res, title, recipientEmails) => {
+            try {   
+                await transporter.sendMail({
+                    from: process.env.MAIL_USER,
+                    to: recipientEmails.join(","), // Join multiple emails into a single string
+                    subject: 'New Blog Published',
+                    html: `<h1>${title}</h1>
+                           <p>Check out the blog now!</p>`,
+                });
+                console.log(`Emails sent to: ${recipientEmails.join(",")}`);
+            } catch (error) {
+                console.error('Error sending blog notification emails: ', error);
+                res.status(500).json({ error: "Failed to send email notifications." });
+                throw error;
+            }
+        },
 
 };

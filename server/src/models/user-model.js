@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
       type: String, // File path to the uploaded image
       default: '/profile/placeholder.png' // Default file path if none is provided
     },
+    subscribedToEmails: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpires: Date
 });
