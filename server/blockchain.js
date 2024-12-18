@@ -13,14 +13,15 @@ const contractAddress = process.env.CONTRACT_ADDRESS;
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
 async function storeHash(recordId, recordHash) {
-    const tx = await contract.storeHash(recordId, ethers.encodeBytes32String(recordHash));
+    const truncatedHash = `0x${recordHash.substring(0, 64)}`; // Ensure it fits into bytes32
+    const tx = await contract.storeHash(recordId, truncatedHash);
     await tx.wait();
-    return tx.hash; // Transaction hash
+    return tx.hash; // Return the transaction hash
 }
 
 async function getHash(recordId) {
     const hash = await contract.getHash(recordId);
-    return ethers.decodeBytes32String(hash);
+    return hash; // Return the raw hash
 }
 
 module.exports = { storeHash, getHash };

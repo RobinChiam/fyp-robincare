@@ -36,4 +36,4 @@ async function verifyMedicalHistoryHash(medicalHistoryId) {
 }
 
 // Call the function with a specific MedicalHistory ID
-verifyMedicalHistoryHash("your-medical-history-id-here");
+verifyMedicalHistoryHash("67623380e21e7cddcd40bd24");

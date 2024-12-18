@@ -5,7 +5,9 @@ const { storeHash, getHash } = require('../../blockchain'); // Import blockchain
 const MedicalHistory = require('../models/medicalHistory-model');
 const crypto = require('crypto');
 const path = require('path');
-const { medicalRecordInfo } = require('../config/mailer');
+const { medicalRecordInfo } = require("../config/mailer");
+const mongoose = require('mongoose');
+const ethers = require('ethers');
 
 
 const addRecord = async (req, res) => {
@@ -22,34 +24,100 @@ const addRecord = async (req, res) => {
 };
 
 const getRecords = async (req, res) => {
-    try {
-        const patientRecord = await Patient.findOne({ user: req.user.id });
-        if (!patientRecord) {
-          return res.status(404).json({ error: 'Patient record not found' });
-        }
-        const patientId = patientRecord._id;
-        const records = await HealthRecord.find({ patientId: patientId })
-        .populate({
-          path: 'doctorId',
-          populate: { path: 'user', select: 'name profilePicture' }
-        })
-        .populate({
-          path: 'patientId',
-          populate: { path: 'user', select: 'name profilePicture' }
-        });
+  try {
+    const patient = await Patient.findOne({ user: req.user.id });
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found." });
+    }
 
-        if (records.length === 0) {
-          return res.status(200).json([]);
-        }
-    
-        
+    const medicalHistory = await MedicalHistory.findOne({ hash: patient.hash }).populate({
+      path: "healthRecords",
+      populate: {
+        path: "doctorId",
+        populate: {
+          path: "user",
+          select: "name",
+        },
+      },
+    });
 
-        res.status(200).json(records);
-      } catch (error) {
-        console.error('Error fetching medical records:', error.message);
-        res.status(500).json({ message: 'Error fetching medical records' });
-      }
+    if (!medicalHistory) {
+      return res.status(404).json({ error: "Medical history not found." });
+    }
+
+    // Convert ObjectId to a padded hexadecimal string
+    const paddedHistoryId = medicalHistory._id.toString();
+
+    // Verify hash on the blockchain
+    const blockchainHash = await getHash(paddedHistoryId);
+    if (!(blockchainHash === patient.hash)) {
+      return res.status(403).json({ error: "Hash verification failed." });
+    }
+
+    res.status(200).json(medicalHistory.healthRecords);
+  } catch (error) {
+    console.error("Error fetching health records:", error.message);
+    res.status(500).json({ error: "Server error." });
+  }
 };
+
+
+const getRecordById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findOne({ user: req.user.id });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found." });
+    }
+
+    const medicalHistory = await MedicalHistory.findOne({ hash: patient.hash }).populate({
+      path: "healthRecords",
+      populate: {
+        path: "doctorId",
+        populate: {
+          path: "user",
+          select: "name",
+        },
+      },
+    });
+
+    if (!medicalHistory) {
+      return res.status(404).json({ error: "Medical history not found." });
+    }
+
+    // Convert ObjectId to a padded hexadecimal string
+    const paddedHistoryId = medicalHistory._id.toString();
+
+    // Verify hash on the blockchain
+    const blockchainHash = await getHash(paddedHistoryId);
+    if (!(blockchainHash === patient.hash)) {
+      return res.status(403).json({ error: "Hash verification failed." });
+    }
+
+    // if (!medicalHistory.healthRecords.includes(id)) {
+    //   return res.status(403).json({ error: "Health record not authorized." });
+    // }
+
+    const healthRecord = await HealthRecord.findById(id).populate({
+      path: "doctorId",
+      populate: {
+        path: "user",
+        select: "name email",
+      },
+    });
+
+    if (!healthRecord) {
+      return res.status(404).json({ error: "Health record not found." });
+    }
+
+    res.status(200).json(healthRecord);
+  } catch (error) {
+    console.error("Error fetching health record:", error.message);
+    res.status(500).json({ error: "Server error." });
+  }
+};
+
 
 const createHealthRecord = async (req, res) => {
   try {
@@ -98,32 +166,6 @@ const createHealthRecord = async (req, res) => {
   } catch (err) {
     console.error('Error creating health record:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
-  }
-};
-    
-
-const getRecordbyId = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const record = await HealthRecord.findById(id)
-      .populate({
-        path: 'doctorId',
-        populate: { path: 'user', select: 'name email' },
-      })
-      .populate({
-        path: 'patientId',
-        populate: { path: 'user', select: 'name email' },
-      });
-
-    if (!record) {
-      return res.status(404).json({ error: 'Health record not found' });
-    }
-
-    res.status(200).json(record);
-  } catch (err) {
-    console.error("Error fetching health record details:", err.message);
-    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -183,10 +225,17 @@ const completeAppointment = async (req, res) => {
   try {
     const { patientId, doctorId, appointmentId, diagnosis, prescription, notes } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(patientId) || !mongoose.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ error: "Invalid patient or doctor ID format." });
+    }
+
+    const parsedPatientId = new mongoose.Types.ObjectId(patientId);
+    const parsedDoctorId = new mongoose.Types.ObjectId(doctorId);
+
     // Step 1: Create Health Record
     const newRecord = await new HealthRecord({
-      patientId,
-      doctorId,
+      patientId: parsedPatientId,
+      doctorId: parsedDoctorId,
       appointmentId,
       diagnosis,
       prescription,
@@ -195,7 +244,12 @@ const completeAppointment = async (req, res) => {
     }).save({ session });
 
     // Step 2: Find Patient and Medical History
-    const patient = await Patient.findById(patientId).session(session);
+    const patient = await Patient.findById(parsedPatientId)
+    .populate({
+      path: 'user',
+      select: 'name email',
+    })
+    .session(session);
     if (!patient) throw new Error("Patient not found.");
 
     let medicalHistory = await MedicalHistory.findOne({ hash: patient.hash }).session(session);
@@ -205,19 +259,21 @@ const completeAppointment = async (req, res) => {
 
     // Step 3: Update Medical History
     medicalHistory.healthRecords.push(newRecord._id);
-    const hash = crypto.createHash("sha256").update(Date.now().toString()).digest("hex");
-    medicalHistory.hash = hash;
+    const fullHash = crypto.createHash("sha256").update(Date.now().toString()).digest("hex");
+    medicalHistory.hash = `0x${fullHash}`; // Ensure it fits into bytes32, prepend 0x to fullHash;
     await medicalHistory.save({ session });
 
     // Step 4: Update Patient's Hash
-    patient.hash = hash;
+    patient.hash = `0x${fullHash}`; // Ensure it fits into bytes32, prepend 0x to fullHash;
     await patient.save({ session });
 
     // Step 5: Store Hash on Blockchain
-    await storeHash(medicalHistory._id.toString(), hash);
+    const truncatedHash = fullHash.substring(0, 64); // Use the first 64 hex characters (32 bytes)
+    await storeHash(medicalHistory._id.toString(), truncatedHash);
+    
 
     // Step 6: Send Notification Email
-    await medicalRecordInfo(req, res, patient.user.name, patient.user.email);
+    await medicalRecordInfo(patient.user.name, patient.user.email);
 
     // Commit Transaction
     await session.commitTransaction();
@@ -226,7 +282,7 @@ const completeAppointment = async (req, res) => {
     res.status(201).json({
       message: "Health record and medical history updated successfully!",
       record: newRecord,
-      hash,
+      hash: fullHash,
     });
   } catch (error) {
     await session.abortTransaction();
@@ -238,4 +294,5 @@ const completeAppointment = async (req, res) => {
 
 
 
-module.exports = { addRecord, getRecords, createHealthRecord, getRecordbyId, getAllHealthRecords, getRecordByHash, completeAppointment }; 
+
+module.exports = { addRecord, getRecords, createHealthRecord, getRecordById, getAllHealthRecords, getRecordByHash, completeAppointment }; 

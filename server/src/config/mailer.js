@@ -151,20 +151,23 @@ module.exports = {
             }
         },
 
-    medicalRecordInfo: async(req, res, username, email) => {
-        try {   
-            await transporter.sendMail({
+        medicalRecordInfo: async (username, email) => {
+            try {
+              await transporter.sendMail({
                 from: process.env.MAIL_USER,
                 to: email,
                 subject: "New Health Record Created",
-                html: `<h1>Hello ${username},</h1><p>A new health record has been created for you. Please log in to view the details.</p>`,
+                html: `<h1>Hello ${username},</h1>
+                <p>A new health record has been created for you. 
+                Please log in to view the details.
+                </p>`,
               });
-                console.log(`Email Sent to ${email}!`);
+              console.log(`Email Sent to ${email}!`);
             } catch (error) {
-            console.error('Error Sending reset password email: ', error);
-            throw error;
+              console.error("Error sending medical record email: ", error.message);
+              throw error;
             }
-        },
+          },
 
         blogInfo: async(req, res, title, recipientEmails) => {
             try {   
